@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Users from "./pages/Users";
 import Dash from "./pages/Dash";
+import LoginGrupo from "./pages/LoginGrupo";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/users" element={<Users />} />
         <Route path="/dash" element={<Dash />} />
+        <Route path="/grupo" element={<LoginGrupo/>} />
       </Routes>
     </>
   );

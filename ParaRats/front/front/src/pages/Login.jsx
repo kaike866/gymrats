@@ -56,13 +56,14 @@ function Login() {
     try {
       const res = await api.post("/login", { email, senha });
 
-      // 💡 Salva token e email no localStorage
+      // ✅ Salva token e email no localStorage
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("email", res.data.email);
 
-      // Redireciona para /users
-      navigate("/users");
+      // ✅ Redireciona para a tela de Dash
+      navigate("/dash");
     } catch (err) {
+      console.error(err);
       alert(err.response?.data?.error || "Erro ao fazer login!");
     }
   };

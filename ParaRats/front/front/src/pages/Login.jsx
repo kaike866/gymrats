@@ -61,7 +61,7 @@ function Login() {
       localStorage.setItem("email", res.data.email);
 
       // ✅ Redireciona para a tela de Dash
-      navigate("/dash");
+      navigate("/grupo");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Erro ao fazer login!");

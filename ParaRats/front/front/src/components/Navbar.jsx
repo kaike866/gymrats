@@ -77,23 +77,28 @@ const LogoutButton = styled.button`
 function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email"); // pega o email do localStorage
+  const isAdmin = email === "admin@gmail.com"; // verifica se é admin
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("email"); // remove também o email
     navigate("/login");
   };
 
   return (
     <NavbarContainer>
-      <Logo onClick={() => navigate("/users")}>
+      <Logo onClick={() => navigate("/")}>
         <Dumbbell size={26} />
         Pararats
       </Logo>
 
       <Links>
-        <NavLink to="/users">
-          <Activity size={18} /> Usuários
-        </NavLink>
+        {isAdmin && (
+          <NavLink to="/users">
+            <Activity size={18} /> Usuários
+          </NavLink>
+        )}
         <NavLink to="/register">
           <Flame size={18} /> Registrar
         </NavLink>
@@ -101,10 +106,11 @@ function Navbar() {
           <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
         ) : (
           <NavLink to="/login">Login</NavLink>
-        )} 
+        )}
       </Links>
     </NavbarContainer>
   );
 }
+
 
 export default Navbar;

@@ -13,8 +13,12 @@ app.use(express.json());
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado"))
+
+  
   .catch((err) => console.error("Erro Mongo:", err));
 
+
+  
 // === Model ===
 const User = require("./models/User");
 
@@ -60,10 +64,26 @@ app.post("/login", async (req, res) => {
 
 
 // Listar usuários
-app.get("/", auth, async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+app.get("/", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  // Se o token não existe, verifica se é o admin local
+  if (!token && req.headers.email === "admin@gmail.com") {
+    const users = await User.find();
+    return res.json(users);
+  }
+
+  // Caso contrário, segue a autenticação normal
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    const users = await User.find();
+    res.json(users);
+  } catch {
+    res.status(403).json({ error: "Token inválido" });
+  }
 });
+
 
 // Deletar usuário (somente admin)
 app.delete("/:id", auth, async (req, res) => {

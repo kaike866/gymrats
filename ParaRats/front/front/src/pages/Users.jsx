@@ -52,6 +52,7 @@ const List = styled.ul`
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
 
   button {
@@ -75,9 +76,10 @@ function Users() {
   const [senha, setSenha] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // 🚀 Verifica se o usuário logado é admin
   useEffect(() => {
-    const email = localStorage.getItem("email");
-    if (email === "admin@gmail.com") {
+    const storedEmail = localStorage.getItem("email");
+    if (storedEmail === "admin@gmail.com") {
       setIsAdmin(true);
     }
 
@@ -89,28 +91,43 @@ function Users() {
     loadUsers();
   }, []);
 
-
+  // 🔄 Carrega todos os usuários
   const loadUsers = async () => {
-    const res = await api.get("/");
-    setUsers(res.data);
+    try {
+      const res = await api.get("/");
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
+    }
   };
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
+  // ➕ Adicionar usuário (apenas admin)
   const handleAdd = async (e) => {
     e.preventDefault();
-    await api.post("/register", { nome, email, senha });
-    setNome("");
-    setEmail("");
-    setSenha("");
-    loadUsers();
+    try {
+      await api.post("/register", { nome, email, senha });
+      setNome("");
+      setEmail("");
+      setSenha("");
+      loadUsers();
+    } catch (err) {
+      alert("Erro ao adicionar usuário!");
+    }
   };
 
+  // ❌ Deletar usuário (apenas admin)
   const handleDelete = async (id) => {
-    await api.delete(`/${id}`);
-    loadUsers();
+    if (!isAdmin) {
+      alert("Apenas o administrador pode excluir usuários!");
+      return;
+    }
+
+    try {
+      await api.delete(`/${id}`);
+      loadUsers();
+    } catch (err) {
+      alert("Erro ao excluir usuário!");
+    }
   };
 
   return (
@@ -119,23 +136,53 @@ function Users() {
         <Activity /> Usuários Pararats
       </Title>
 
-      <Form onSubmit={handleAdd}>
-        <input placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} required />
-        <input type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} required />
-        <button type="submit">Adicionar</button>
-      </Form>
+      {/* Se for admin, mostra tudo */}
+      {isAdmin ? (
+        <>
+          <Form onSubmit={handleAdd}>
+            <input
+              placeholder="Nome"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              required
+            />
+            <input
+              type="email"
+              placeholder="E-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+            />
+            <button type="submit">Adicionar</button>
+          </Form>
 
-      <List>
-        {users.map((u) => (
-          <li key={u._id}>
-            <span>{u.nome} — {u.email}</span>
-            <button onClick={() => handleDelete(u._id)}>Excluir</button>
-          </li>
-        ))}
-      </List>
+          <List>
+            {users.map((u) => (
+              <li key={u._id}>
+                <span>
+                  {u.nome} — {u.email}
+                </span>
+                <button onClick={() => handleDelete(u._id)}>Excluir</button>
+              </li>
+            ))}
+          </List>
+        </>
+      ) : (
+        // Se não for admin, mostra só uma mensagem
+        <p style={{ marginTop: "40px", color: "#666", fontSize: "18px" }}>
+          Você não tem permissão para visualizar os usuários.
+        </p>
+      )}
     </Container>
   );
+
 }
 
 export default Users;

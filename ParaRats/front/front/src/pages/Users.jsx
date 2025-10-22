@@ -73,6 +73,22 @@ function Users() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const email = localStorage.getItem("email");
+    if (email === "admin@gmail.com") {
+      setIsAdmin(true);
+    }
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+
+    loadUsers();
+  }, []);
+
 
   const loadUsers = async () => {
     const res = await api.get("/");

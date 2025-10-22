@@ -55,10 +55,15 @@ function Login() {
     e.preventDefault();
     try {
       const res = await api.post("/login", { email, senha });
+
+      // 💡 Salva token e email no localStorage
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("email", res.data.email);
+
+      // Redireciona para /users
       navigate("/users");
     } catch (err) {
-      alert("Erro ao fazer login!");
+      alert(err.response?.data?.error || "Erro ao fazer login!");
     }
   };
 

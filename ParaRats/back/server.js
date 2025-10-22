@@ -49,11 +49,15 @@ app.post("/login", async (req, res) => {
   const { email, senha } = req.body;
   const user = await User.findOne({ email });
   if (!user) return res.status(400).json({ error: "Usuário não encontrado" });
+
   const valid = await bcrypt.compare(senha, user.senha);
   if (!valid) return res.status(400).json({ error: "Senha incorreta" });
+
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
-  res.json({ token });
+
+  res.json({ token, email: user.email }); // 👈 Enviando também o email
 });
+
 
 // Listar usuários
 app.get("/", auth, async (req, res) => {
@@ -61,11 +65,19 @@ app.get("/", auth, async (req, res) => {
   res.json(users);
 });
 
-// Deletar usuário
+// Deletar usuário (somente admin)
 app.delete("/:id", auth, async (req, res) => {
+  const user = await User.findById(req.user.id); // quem está logado
+
+  // Verifica se é o admin
+  if (user.email !== "admin@gmail.com") {
+    return res.status(403).json({ error: "Acesso negado: apenas o admin pode excluir usuários." });
+  }
+
   await User.findByIdAndDelete(req.params.id);
-  res.json({ message: "Usuário removido" });
+  res.json({ message: "Usuário removido com sucesso." });
 });
+
 
 app.listen(process.env.PORT || 4000, () =>
   console.log(`🚀 Servidor rodando na porta ${process.env.PORT || 4000}`)

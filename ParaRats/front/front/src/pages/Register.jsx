@@ -58,9 +58,14 @@ function Register() {
       alert("Usuário registrado com sucesso!");
       navigate("/login");
     } catch (err) {
-      alert("Erro ao registrar!");
+      if (err.response && err.response.status === 400) {
+        alert("Esse email já está registrado. Tente outro.");
+      } else {
+        alert("Erro ao registrar usuário. Tente novamente.");
+      }
     }
   };
+
 
   return (
     <Container>

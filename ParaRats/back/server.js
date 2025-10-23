@@ -13,12 +13,8 @@ app.use(express.json());
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado"))
-
-  
   .catch((err) => console.error("Erro Mongo:", err));
 
-
-  
 // === Model ===
 const User = require("./models/User");
 
@@ -31,74 +27,131 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch {
-    res.status(403).json({ error: "Token inválido" });
+    return res.status(403).json({ error: "Token inválido" });
   }
 };
 
-// === Rotas ===
+// === ROTAS ===
 
-// Registrar
+// 🧾 Registrar usuário (sem e-mails duplicados)
 app.post("/register", async (req, res) => {
-  const { nome, email, senha } = req.body;
-  const existing = await User.findOne({ email });
-  if (existing) return res.status(400).json({ error: "Email já cadastrado" });
-  const hashed = await bcrypt.hash(senha, 10);
-  const user = new User({ nome, email, senha: hashed });
-  await user.save();
-  res.json({ message: "Usuário criado com sucesso!" });
+  try {
+    const { nome, email, senha } = req.body;
+
+    const existingUser = await User.findOne({ email }); // verifica por email
+    if (existingUser) {
+      return res.status(400).json({ error: "Email já registrado." });
+    }
+
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    const newUser = new User({ nome, email, senha: hashedPassword });
+
+    await newUser.save();
+    res.status(201).json({ message: "Usuário registrado com sucesso!" });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao registrar usuário." });
+  }
 });
 
-// Login
+
+// 🔐 Login
 app.post("/login", async (req, res) => {
   const { email, senha } = req.body;
+
+  // ✅ Login do admin
+  if (email === "admin@gmail.com" && senha === process.env.ADMIN_PASSWORD) {
+    const token = jwt.sign({ email: "admin@gmail.com", role: "admin" }, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
+    return res.json({ token, email });
+  }
+
+  // 🔍 Login de usuário comum
   const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ error: "Usuário não encontrado" });
+  if (!user) return res.status(400).json({ error: "Usuário não encontrado." });
 
   const valid = await bcrypt.compare(senha, user.senha);
-  if (!valid) return res.status(400).json({ error: "Senha incorreta" });
+  if (!valid) return res.status(400).json({ error: "Senha incorreta." });
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
+  const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
+    expiresIn: "2h",
+  });
 
-  res.json({ token, email: user.email }); // 👈 Enviando também o email
+  return res.json({ token, email: user.email });
 });
 
-
-// Listar usuários
+// 📋 Listar usuários (somente admin)
 app.get("/", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-
-  // Se o token não existe, verifica se é o admin local
-  if (!token && req.headers.email === "admin@gmail.com") {
-    const users = await User.find();
-    return res.json(users);
-  }
-
-  // Caso contrário, segue a autenticação normal
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    const users = await User.find();
-    res.json(users);
+
+    if (decoded.email === "admin@gmail.com") {
+      const users = await User.find().select("-senha");
+      return res.json(users);
+    }
+
+    return res.status(403).json({ error: "Apenas o administrador pode visualizar os usuários." });
   } catch {
-    res.status(403).json({ error: "Token inválido" });
+    return res.status(403).json({ error: "Token inválido ou expirado." });
   }
 });
 
-
-// Deletar usuário (somente admin)
+// ❌ Deletar usuário (somente admin)
 app.delete("/:id", auth, async (req, res) => {
-  const user = await User.findById(req.user.id); // quem está logado
+  try {
+    if (req.user?.email !== "admin@gmail.com") {
+      return res.status(403).json({ error: "Apenas o administrador pode excluir usuários." });
+    }
 
-  // Verifica se é o admin
-  if (user.email !== "admin@gmail.com") {
-    return res.status(403).json({ error: "Acesso negado: apenas o admin pode excluir usuários." });
+    await User.findByIdAndDelete(req.params.id);
+    return res.json({ message: "Usuário removido com sucesso!" });
+  } catch (err) {
+    console.error("Erro ao deletar usuário:", err);
+    return res.status(500).json({ error: "Erro ao remover usuário." });
   }
-
-  await User.findByIdAndDelete(req.params.id);
-  res.json({ message: "Usuário removido com sucesso." });
 });
 
+// ✏️ Editar usuário (apenas admin)
+app.put("/users/:id", auth, async (req, res) => {
+  try {
+    const { email, senha } = req.body;
 
-app.listen(process.env.PORT || 4000, () =>
-  console.log(`🚀 Servidor rodando na porta ${process.env.PORT || 4000}`)
-);
+    if (req.user?.email !== "admin@gmail.com") {
+      return res.status(403).json({ error: "Apenas o administrador pode editar usuários." });
+    }
+
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
+    // Verifica duplicidade de e-mail, mas não de senha
+    if (email && email !== userToUpdate.email) {
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(400).json({ error: "Este e-mail já está cadastrado por outro usuário." });
+    }
+
+    const updateData = {};
+    if (email) updateData.email = email;
+    if (senha && senha.trim() !== "") {
+      const hashed = await bcrypt.hash(senha, 10);
+      updateData.senha = hashed;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "Nenhum dado válido para atualizar." });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select("-senha");
+    return res.json({ message: "Usuário atualizado com sucesso!", user: updatedUser });
+  } catch (err) {
+    console.error("Erro ao atualizar usuário:", err);
+    return res.status(500).json({ error: "Erro interno ao atualizar usuário." });
+  }
+});
+
+// 🚀 Inicializa servidor
+app.listen(process.env.PORT || 4000, () => {
+  console.log(`🚀 Servidor rodando na porta ${process.env.PORT || 4000}`);
+});

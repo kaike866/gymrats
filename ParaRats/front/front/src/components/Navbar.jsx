@@ -77,31 +77,38 @@ const LogoutButton = styled.button`
 function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const email = localStorage.getItem("email"); // pega o email do localStorage
-  const isAdmin = email === "admin@gmail.com"; // verifica se é admin
+  const email = localStorage.getItem("email");
+  const isAdmin = email === "admin@gmail.com";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("email"); // remove também o email
+    localStorage.removeItem("email");
     navigate("/login");
   };
 
   return (
     <NavbarContainer>
-      <Logo onClick={() => navigate("/")}>
+      <Logo onClick={() => navigate("/dash")}>
         <Dumbbell size={26} />
         Pararats
       </Logo>
 
       <Links>
+        {/* 🔹 Somente o admin vê o menu Usuários */}
         {isAdmin && (
           <NavLink to="/users">
             <Activity size={18} /> Usuários
           </NavLink>
         )}
-        <NavLink to="/register">
-          <Flame size={18} /> Registrar
-        </NavLink>
+
+        {/* 🔹 Registrar só aparece quando NÃO há login */}
+        {!token && (
+          <NavLink to="/register">
+            <Flame size={18} /> Registrar
+          </NavLink>
+        )}
+
+        {/* 🔹 Alterna entre Login e Sair */}
         {token ? (
           <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
         ) : (
@@ -111,6 +118,5 @@ function Navbar() {
     </NavbarContainer>
   );
 }
-
 
 export default Navbar;

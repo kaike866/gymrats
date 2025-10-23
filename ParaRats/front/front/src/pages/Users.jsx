@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api from "../api";
 import styled from "styled-components";
-import { Activity } from "lucide-react";
+import { Activity, Edit3, Trash2, Save } from "lucide-react";
+
 
 const Container = styled.div`
   padding: 30px;
@@ -53,6 +54,19 @@ const List = styled.ul`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+  }
+
+  .edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  input {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
   }
 
   button {
@@ -62,9 +76,26 @@ const List = styled.ul`
     border-radius: 6px;
     padding: 6px 10px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 
     &:hover {
       background: #e60000;
+    }
+
+    &.edit {
+      background: #007bff;
+      &:hover {
+        background: #0056b3;
+      }
+    }
+
+    &.save {
+      background: #00b33c;
+      &:hover {
+        background: #009933;
+      }
     }
   }
 `;
@@ -75,23 +106,23 @@ function Users() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [editSenha, setEditSenha] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
+  const userRefs = useRef({});
 
-  // 🚀 Verifica se o usuário logado é admin
+
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
-    if (storedEmail === "admin@gmail.com") {
-      setIsAdmin(true);
-    }
+    if (storedEmail === "admin@gmail.com") setIsAdmin(true);
 
     const token = localStorage.getItem("token");
-    if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
+    if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
     loadUsers();
   }, []);
 
-  // 🔄 Carrega todos os usuários
   const loadUsers = async () => {
     try {
       const res = await api.get("/");
@@ -101,7 +132,6 @@ function Users() {
     }
   };
 
-  // ➕ Adicionar usuário (apenas admin)
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
@@ -110,25 +140,64 @@ function Users() {
       setEmail("");
       setSenha("");
       loadUsers();
-    } catch (err) {
+    } catch {
       alert("Erro ao adicionar usuário!");
     }
   };
 
-  // ❌ Deletar usuário (apenas admin)
   const handleDelete = async (id) => {
-    if (!isAdmin) {
-      alert("Apenas o administrador pode excluir usuários!");
-      return;
-    }
+    if (!isAdmin) return alert("Apenas o administrador pode excluir usuários!");
+    if (!window.confirm("Tem certeza que deseja excluir este usuário?")) return;
 
     try {
       await api.delete(`/${id}`);
       loadUsers();
-    } catch (err) {
+    } catch {
       alert("Erro ao excluir usuário!");
     }
   };
+
+  const handleEdit = (user) => {
+    setEditingUser(user._id);
+    setEditEmail(user.email);
+    setEditSenha("");
+  };
+
+  const handleSaveEdit = async (id) => {
+    try {
+      // monta payload apenas com campos válidos
+      const payload = {};
+      if (editEmail && editEmail.trim() !== "") payload.email = editEmail.trim();
+      if (editSenha && editSenha.trim() !== "") payload.senha = editSenha.trim();
+
+      if (Object.keys(payload).length === 0) {
+        alert("Nenhuma alteração informada.");
+        return;
+      }
+
+      const res = await api.put(`/users/${id}`, payload);
+      alert(res.data?.message || "Usuário atualizado com sucesso!");
+      setEditingUser(null);
+      setEditEmail("");
+      setEditSenha("");
+      loadUsers();
+    } catch (err) {
+      console.error("Erro salvar edição:", err);
+      const serverMsg = err.response?.data?.error || "Erro ao salvar alterações.";
+      alert(serverMsg);
+    }
+  };
+
+  const scrollToEmail = () => {
+    const user = users.find(u => u.email === searchEmail);
+    if (user && userRefs.current[user._id]) {
+      userRefs.current[user._id].scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      alert("Usuário não encontrado!");
+    }
+  };
+
+
 
   return (
     <Container>
@@ -136,7 +205,6 @@ function Users() {
         <Activity /> Usuários Pararats
       </Title>
 
-      {/* Se for admin, mostra tudo */}
       {isAdmin ? (
         <>
           <Form onSubmit={handleAdd}>
@@ -163,26 +231,78 @@ function Users() {
             <button type="submit">Adicionar</button>
           </Form>
 
+
+          <Form>
+            <input
+              type="email"
+              placeholder="Buscar usuário por e-mail"
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+            />
+            <button type="button" onClick={scrollToEmail}>
+              Ir para e-mail
+            </button>
+          </Form>
+
+
           <List>
-            {users.map((u) => (
-              <li key={u._id}>
-                <span>
-                  {u.nome} — {u.email}
-                </span>
-                <button onClick={() => handleDelete(u._id)}>Excluir</button>
-              </li>
-            ))}
+            {users.map((u) => {
+              const isHighlighted = searchEmail && u.email.includes(searchEmail);
+              return (
+                <li
+                  key={u._id}
+                  ref={(el) => (userRefs.current[u._id] = el)}
+                  style={{
+                    background: searchEmail && u.email.includes(searchEmail) ? "#ffd633" : "white",
+                  }}
+                >
+                  {editingUser === u._id ? (
+                    <div className="edit-fields">
+                      <input
+                        type="email"
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                      />
+                      <input
+                        type="password"
+                        placeholder="Nova senha (opcional)"
+                        value={editSenha}
+                        onChange={(e) => setEditSenha(e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <span>
+                      {u.nome} — {u.email}
+                    </span>
+                  )}
+
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {editingUser === u._id ? (
+                      <button className="save" onClick={() => handleSaveEdit(u._id)}>
+                        <Save size={16} /> Salvar
+                      </button>
+                    ) : (
+                      <button className="edit" onClick={() => handleEdit(u)}>
+                        <Edit3 size={16} /> Editar
+                      </button>
+                    )}
+                    <button onClick={() => handleDelete(u._id)}>
+                      <Trash2 size={16} /> Excluir
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </List>
+
         </>
       ) : (
-        // Se não for admin, mostra só uma mensagem
-        <p style={{ marginTop: "40px", color: "#666", fontSize: "18px" }}>
+        <p style={{ marginTop: "40px", color: "#149dc7", fontSize: "18px" }}>
           Você não tem permissão para visualizar os usuários.
         </p>
       )}
     </Container>
   );
-
 }
 
 export default Users;

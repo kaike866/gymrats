@@ -10,12 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tsparticles/react": "^3.0.0",
     "axios": "^1.12.2",
     "lucide-react": "^0.545.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.4",
-    "styled-components": "^6.1.19"
+    "react-tsparticles": "^2.12.2",
+    "styled-components": "^6.1.19",
+    "three": "^0.181.0",
+    "tsparticles": "^3.9.1",
+    "vanta": "^0.5.24"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

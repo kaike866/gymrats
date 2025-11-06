@@ -1,17 +1,25 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { LogOut, UserPlus, Home, LogIn } from "lucide-react";
+import logoParanoa from "../assets/paranoalogosemfundo.png";
+
+// 🔹 Microanimação flutuante igual ao Register.jsx
+const floatLogo = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+`;
 
 const NavbarContainer = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #000; /* Fundo preto */
-  padding: 14px 28px;
+background: linear-gradient(90deg, #0b1f3a 0%, #052b6b 100%);
+
+  padding: 14px 32px;
   font-family: "Poppins", sans-serif;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  border-bottom: 3px solid #ffcc00;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid #4f98f7;
   position: sticky;
   top: 0;
   z-index: 999;
@@ -21,54 +29,53 @@ const Logo = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.7rem;
-  font-weight: 800;
-  letter-spacing: -1px;
+  font-weight: 700;
   cursor: pointer;
-  color: #ffcc00;
+  color: #4f98f7;
+  transition: transform 0.3s ease;
 
-  span {
-    background: #ffcc00;
-    color: #000;
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 1.3rem;
-    box-shadow: 0 2px 10px rgba(255, 204, 0, 0.5);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 16px rgba(255, 204, 0, 0.6);
-    }
+  &:hover {
+    transform: scale(1.04);
   }
+
+  h1 {
+    font-size: 1.6rem;
+    letter-spacing: -1px;
+    color: #4f98f7;
+  }
+`;
+
+const AnimatedLogo = styled.img`
+  width: 42px;
+  height: 42px;
+  animation: ${floatLogo} 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(79, 152, 247, 0.4));
 `;
 
 const Links = styled.div`
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 22px;
 `;
 
 const NavLink = styled(Link)`
-  color: #ffcc00;
+  color: #e4e4e4;
   text-decoration: none;
   font-weight: 600;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: all 0.25s ease;
 
   &:hover {
-    background-color: #ffcc00;
+    background-color: #4f98f7;
     color: #000;
     transform: translateY(-2px);
   }
 
   svg {
-    color: #ffcc00;
     transition: color 0.25s;
   }
 
@@ -78,7 +85,7 @@ const NavLink = styled(Link)`
 `;
 
 const LogoutButton = styled.button`
-  background-color: #ffcc00;
+  background-color: #4f98f7;
   border: none;
   color: #000;
   padding: 8px 16px;
@@ -91,9 +98,8 @@ const LogoutButton = styled.button`
   transition: all 0.25s ease;
 
   &:hover {
-    background-color: #ffd633;
     transform: translateY(-2px);
-    box-shadow: 0 3px 10px rgba(255, 204, 0, 0.5);
+    box-shadow: 0 3px 10px #4f98f7;
   }
 `;
 
@@ -111,27 +117,28 @@ function Navbar() {
 
   return (
     <NavbarContainer>
-      {/* LOGO */}
+      {/* 🔹 LOGO animada */}
       <Logo onClick={() => navigate("/assinatura")}>
-        <span>DW</span>
+        <AnimatedLogo
+          src={logoParanoa}
+          alt="Paranoá Indústria de Borracha"
+        />
+        <h1>ARANOÁ</h1>
       </Logo>
 
       <Links>
-        {/* 🔹 Admin vê o menu Home */}
         {isAdmin && (
           <NavLink to="/assinatura">
             <Home size={18} /> Home
           </NavLink>
         )}
 
-        {/* 🔹 Registrar só aparece quando não há login */}
         {!token && (
           <NavLink to="/">
             <UserPlus size={18} /> Registrar
           </NavLink>
         )}
 
-        {/* 🔹 Alterna entre Login e Sair */}
         {token ? (
           <LogoutButton onClick={handleLogout}>
             <LogOut size={18} /> Sair

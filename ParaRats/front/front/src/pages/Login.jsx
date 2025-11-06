@@ -1,112 +1,115 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import api from "../api";
-import { useNavigate, Link } from "react-router-dom";
-import styled from "styled-components";
-import { Lock } from "lucide-react";
-import VantaBackground from "../components/VantaBackground"; // fundo com partículas amarelas
+import { useNavigate } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
+import logoParanoa from "../assets/paranoalogosemfundo.png";
 
-const Page = styled.div`
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+const Container = styled.div`
   position: relative;
-  font-family: "Poppins", sans-serif;
-  color: #fff;
-  background: transparent; /* deixa ver o efeito Vanta */
-`;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f7f9fc 0%, #eaf1fb 100%);
 
-/* Card central */
-const Card = styled.div`
-  width: 380px;
-  padding: 40px 30px;
-  border-radius: 14px;
-  background: rgba(10, 10, 10, 0.88);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 204, 0, 0.08);
-  text-align: center;
-  z-index: 2;
-  backdrop-filter: blur(8px);
-`;
-
-/* Logo e título */
-const LogoRow = styled.div`
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 25px;
-
-  img {
-    height: 48px;
-    margin-bottom: 10px;
-  }
-
-  .brand {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: #ffcc00;
-  }
-
-  p {
-    margin: 0;
-    color: #ccc;
-    font-size: 14px;
-  }
 `;
 
-/* Inputs e botão */
+const Canvas = styled.canvas`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+`;
+
+const Card = styled.div`
+  position: relative;
+  background: linear-gradient(90deg, #0b1f3a 0%, #052b6b 100%);
+
+  border: 1px solid #0a64da;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(79, 152, 247, 0.4);
+
+  border-radius: 16px;
+  padding: 50px 35px;
+  text-align: center;
+  color: white;
+  width: 380px;
+  z-index: 2;
+  font-family: "Poppins", sans-serif;
+`;
+
+
+const Title = styled.h2`
+  color: #fff;
+  margin-bottom: 8px;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+`;
+
+const Subtitle = styled.p`
+  font-size: 0.85rem;
+  color: #bbb;
+  margin-bottom: 24px;
+`;
+
 const Input = styled.input`
   width: 100%;
-  padding: 12px 14px;
-  margin-top: 14px;
-  border-radius: 8px;
-  background: #111;
-  border: 1px solid rgba(255, 204, 0, 0.25);
-  color: #eee;
-  font-size: 14px;
-  transition: 0.2s ease;
-
-  &::placeholder {
-    color: #888;
-  }
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #555;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: 0.3s;
+  box-sizing: border-box; /* 🔹 garante que todos os inputs fiquem exatamente do mesmo tamanho */
 
   &:focus {
-    outline: none;
-    border-color: #ffcc00;
-    box-shadow: 0 0 10px rgba(255, 204, 0, 0.15);
-    background: #151515;
+    border-color: #076bee;
+    box-shadow: 0 0 8px #4f98f7;
+  }
+
+  &::placeholder {
+    color: #aaa;
   }
 `;
+
 
 const Button = styled.button`
   width: 100%;
-  margin-top: 20px;
-  padding: 12px;
-  background: linear-gradient(180deg, #ffcc00, #f5b300);
-  color: #000;
-  border: none;
-  border-radius: 8px;
+  background: linear-gradient(90deg, #4f98f7, #0056d6);
+color: #fff;
+ border: none;
+
   font-weight: 700;
-  letter-spacing: 0.5px;
+  padding: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(255, 204, 0, 0.25);
-  transition: transform 0.2s ease;
+  transition: 0.3s;
+  margin-top: 10px;
 
   &:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 14px #0e2aa5;
+    filter: brightness(1.1);
+  transform: translateY(-2px);
   }
 `;
 
-const FooterText = styled.p`
-  color: #bdbdbd;
-  font-size: 13px;
-  margin-top: 14px;
+const RegisterLink = styled.p`
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #ccc;
 
   a {
-    color: #ffcc00;
+    color: #4f98f7;
+    font-weight: 600;
     text-decoration: none;
-    font-weight: 700;
+    cursor: pointer;
 
     &:hover {
       text-decoration: underline;
@@ -114,10 +117,76 @@ const FooterText = styled.p`
   }
 `;
 
-export default function Login() {
+// 🔹 1. Define a animação primeiro
+const floatLogo = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+`;
+
+const AnimatedLogo = styled.img`
+  width: 42px;
+  height: 42px;
+  animation: ${floatLogo} 3s ease-in-out infinite;
+`;
+
+function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const navigate = useNavigate();
+  const canvasRef = useRef(null);
+
+  // 🔹 Efeito de partículas (igual ao Register)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 1,
+      vy: (Math.random() - 0.5) * 1,
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0e2aa5";
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.strokeStyle = "#4f98f7";
+      particles.forEach((p1, i) => {
+        particles.slice(i + 1).forEach((p2) => {
+          const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        });
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -133,39 +202,51 @@ export default function Login() {
   };
 
   return (
-    <>
-      {/* Efeito de partículas amarelas */}
-      <VantaBackground color="#ffcc00" backgroundColor="#000000" />
-      <Page>
-        <Card>
-          <LogoRow>
-            <div className="brand">DATAWAKE</div>
-            <p>Faça login para acessar o DataDriven</p>
-          </LogoRow>
+    <Container>
+      <Canvas ref={canvasRef} />
+      <Card>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            marginBottom: "8px",
+          }}
+        >
+          <AnimatedLogo src={logoParanoa} alt="Paranoá" />
+          <h2 style={{ color: "#fafafa", fontWeight: 600, fontSize: "1.6rem" }}>
+            ARANOÁ
+          </h2>
+        </div>
 
-          <form onSubmit={handleLogin}>
-            <Input
-              type="email"
-              placeholder="E-mail corporativo"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-            />
-            <Button type="submit">Login</Button>
-          </form>
+        <Subtitle>Faça login para acessar o DataDriven</Subtitle>
 
-          <FooterText>
-            Não tem uma conta? <Link to="/register">Registrar</Link>
-          </FooterText>
-        </Card>
-      </Page>
-    </>
+        <form onSubmit={handleLogin}>
+          <Input
+            type="email"
+            placeholder="E-mail corporativo"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            type="password"
+            placeholder="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            required
+          />
+          <Button type="submit">Entrar</Button>
+        </form>
+
+        <RegisterLink>
+          Não tem uma conta?{" "}
+          <a onClick={() => navigate("/register")}>Registrar</a>
+        </RegisterLink>
+      </Card>
+    </Container>
   );
 }
+
+export default Login;

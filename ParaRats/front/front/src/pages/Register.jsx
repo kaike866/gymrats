@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { Flame } from "lucide-react";
+import styled, { keyframes } from "styled-components";
+import logoParanoa from "../assets/paranoalogosemfundo.png";
 
 const Container = styled.div`
   position: relative;
   height: 100vh;
   width: 100%;
   overflow: hidden;
-  background: #000;
+  background: linear-gradient(180deg, #f7f9fc 0%, #eaf1fb 100%);
+
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,20 +26,21 @@ const Canvas = styled.canvas`
 
 const Card = styled.div`
   position: relative;
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid #ffcc00;
-  box-shadow: 0 0 20px rgba(255, 204, 0, 0.15);
+  background: rgba(0, 0, 0, 0.795);
+  border: 1px solid #0a64da;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(79, 152, 247, 0.4);
+
   border-radius: 16px;
-  padding: 40px 35px;
+  padding: 50px 35px;
   text-align: center;
   color: white;
-  width: 340px;
+  width: 380px;
   z-index: 2;
   font-family: "Poppins", sans-serif;
 `;
 
 const Title = styled.h2`
-  color: #ffcc00;
+  color: #4f98f7;
   margin-bottom: 8px;
   font-size: 1.6rem;
   letter-spacing: 1px;
@@ -61,10 +63,11 @@ const Input = styled.input`
   font-size: 0.95rem;
   outline: none;
   transition: 0.3s;
+  box-sizing: border-box; /* 🔹 garante que todos os inputs fiquem exatamente do mesmo tamanho */
 
   &:focus {
-    border-color: #ffcc00;
-    box-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+    border-color: #076bee;
+    box-shadow: 0 0 8px #4f98f7;
   }
 
   &::placeholder {
@@ -72,11 +75,12 @@ const Input = styled.input`
   }
 `;
 
+
 const Button = styled.button`
   width: 100%;
-  background: linear-gradient(90deg, #ffcc00, #ffdd33);
-  border: none;
-  color: #000;
+  background: linear-gradient(90deg, #4f98f7, #0056d6);
+color: #fff;
+ border: none;
   font-weight: 700;
   padding: 12px;
   border-radius: 10px;
@@ -86,7 +90,9 @@ const Button = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(255, 204, 0, 0.3);
+    box-shadow: 0 4px 14px #136ee6;
+    filter: brightness(1.1);
+  transform: translateY(-2px);
   }
 `;
 
@@ -96,7 +102,7 @@ const RegisterLink = styled.p`
   color: #ccc;
 
   a {
-    color: #ffcc00;
+    color: #4f98f7;
     font-weight: 600;
     text-decoration: none;
 
@@ -105,6 +111,20 @@ const RegisterLink = styled.p`
     }
   }
 `;
+
+// 🔹 1. Define a animação primeiro
+const floatLogo = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+`;
+
+const AnimatedLogo = styled.img`
+  width: 42px;
+  height: 42px;
+  animation: ${floatLogo} 3s ease-in-out infinite;
+`;
+
+
 
 function Register() {
   const [nome, setNome] = useState("");
@@ -129,7 +149,7 @@ function Register() {
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#ffcc00";
+      ctx.fillStyle = "#4f98f7";
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -142,7 +162,7 @@ function Register() {
         ctx.fill();
       });
 
-      ctx.strokeStyle = "rgba(255, 204, 0, 0.4)";
+      ctx.strokeStyle = "#4f98f7";
       particles.forEach((p1, i) => {
         particles.slice(i + 1).forEach((p2) => {
           const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
@@ -166,6 +186,7 @@ function Register() {
     });
   }, []);
 
+
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -185,8 +206,21 @@ function Register() {
     <Container>
       <Canvas ref={canvasRef} />
       <Card>
-        <Flame size={42} color="#ffcc00" />
-        <Title>DATAWAKE</Title>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            marginBottom: "8px",
+          }}
+        >
+          <AnimatedLogo src={logoParanoa} alt="Paranoá" />
+          <h2 style={{ color: "#4f98f7", fontWeight: 600, fontSize: "1.6rem" }}>
+            ARANOÁ
+          </h2>
+        </div>
+
         <Subtitle>Crie sua conta para acessar o DataDriven</Subtitle>
 
         <form onSubmit={handleRegister}>

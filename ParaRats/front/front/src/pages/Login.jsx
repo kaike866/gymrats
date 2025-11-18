@@ -1,3 +1,4 @@
+// ...existing code...
 import React, { useState, useEffect, useRef } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
@@ -129,6 +130,10 @@ const AnimatedLogo = styled.img`
   animation: ${floatLogo} 3s ease-in-out infinite;
 `;
 
+// Demo admin credentials
+const DEMO_ADMIN_EMAIL = "admin@paranoa.com";
+const DEMO_ADMIN_PASS = "admin123";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -138,6 +143,7 @@ function Login() {
   // 🔹 Efeito de partículas (igual ao Register)
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -149,6 +155,7 @@ function Login() {
       vy: (Math.random() - 0.5) * 1,
     }));
 
+    let rafId;
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#0e2aa5";
@@ -177,27 +184,60 @@ function Login() {
         });
       });
 
-      requestAnimationFrame(draw);
+      rafId = requestAnimationFrame(draw);
     }
 
     draw();
 
-    window.addEventListener("resize", () => {
+    function onResize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-    });
+    }
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
+
+  const handleSuccessfulLogin = (token, userEmail, isAdminFlag) => {
+    localStorage.setItem("token", token || ""); 
+    localStorage.setItem("email", userEmail || "");
+    localStorage.setItem("isAdmin", isAdminFlag ? "1" : "0");
+    navigate("/assinatura");
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // fallback demo while backend admin may not exist
+    if (email === DEMO_ADMIN_EMAIL && senha === DEMO_ADMIN_PASS) {
+      handleSuccessfulLogin("demo-admin-token", DEMO_ADMIN_EMAIL, true);
+      return;
+    }
+
     try {
+      // tentativa padrão (campo "senha")
       const res = await api.post("/login", { email, senha });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("email", res.data.email);
-      navigate("/assinatura");
+      const token = res.data.token;
+      const userEmail = res.data.email ?? email;
+      const isAdmin = res.data.isAdmin ?? (userEmail === DEMO_ADMIN_EMAIL);
+      handleSuccessfulLogin(token, userEmail, !!isAdmin);
+      return;
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.error || "Erro ao fazer login!");
+      // tenta payload com "password" se backend usar outra chave
+      try {
+        const res2 = await api.post("/login", { email, password: senha });
+        const token = res2.data.token;
+        const userEmail = res2.data.email ?? email;
+        const isAdmin = res2.data.isAdmin ?? (userEmail === DEMO_ADMIN_EMAIL);
+        handleSuccessfulLogin(token, userEmail, !!isAdmin);
+        return;
+      } catch (err2) {
+        console.error(err2);
+        alert(err2.response?.data?.error || err.response?.data?.error || "Erro ao fazer login!");
+      }
     }
   };
 
@@ -242,8 +282,10 @@ function Login() {
 
         <RegisterLink>
           Não tem uma conta?{" "}
-          <a onClick={() => navigate("/register")}>Registrar</a>
+          <a onClick={() => navigate("/")}>Registrar</a>
         </RegisterLink>
+
+      
       </Card>
     </Container>
   );

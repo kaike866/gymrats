@@ -114,9 +114,14 @@ const StyledTextArea = styled.textarea`
 const SignaturesArea = styled.div`
   margin-top: 18px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 18px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
 `;
+
 
 const SigBlock = styled.div`
   border: 2px solid #1976d2;
@@ -125,8 +130,10 @@ const SigBlock = styled.div`
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  min-height: 280px; /* evita quebra */
 `;
+
+
 
 const SigHeader = styled.div`
   font-weight: 700;
@@ -141,17 +148,17 @@ const SigField = styled.div`
 `;
 
 const SigLine = styled.div`
-  height: 100px;
+  height: 110px;
   border-top: 2px solid #1976d2;
   margin-top: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
   background: #f9f9f9;
   border-radius: 4px;
+  overflow: hidden;
 `;
+
 
 const SigImg = styled.img`
   max-height: 90px;
@@ -369,6 +376,29 @@ export default function AssinaturaDigital() {
     persistHistory([]);
   }
 
+  const saveBlock = async (index) => {
+    const blk = blocks[index];
+
+    if (!blk.name || !blk.func || !blk.date || !blk.signature) {
+      alert("Preencha todos os campos antes de salvar.");
+      return;
+    }
+
+    try {
+      await api.post(`/assinaturas/${docId}/block/${index}`, blk);
+
+      const newBlocks = [...blocks];
+      newBlocks[index].locked = true;
+      setBlocks(newBlocks);
+
+      alert("Bloco salvo e travado!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar bloco");
+    }
+  };
+
+
   return (
     <Page>
       <ExportWrapper ref={exportRef}>
@@ -381,26 +411,26 @@ export default function AssinaturaDigital() {
           </LogoBox>
 
           <HeaderInfo>
-            {/*
-  ===================================================================
-  1. CAMPOS DE DADOS (Documento, Nº, Descrição da Revisão)
-  ===================================================================
-  */}
 
-            {/* A. Versão EDITÁVEL para o ADMIN */}
+            {/* ============================================================
+      1. CAMPOS EDITÁVEIS (APENAS ADMIN)
+     ============================================================ */}
             {currentUser?.isAdmin && (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+
                   {/* Documento */}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Documento</div>
                     <StyledInput value={title} onChange={(e) => setTitle(e.target.value)} />
                   </div>
-                  {/* Nº */}
+
+                  {/* Nº (ADMIN EDITA) */}
                   <div style={{ width: 200 }}>
                     <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Nº</div>
                     <StyledInput value={docNumber} onChange={(e) => setDocNumber(e.target.value)} />
                   </div>
+
                 </div>
 
                 {/* Descrição da Revisão */}
@@ -411,48 +441,28 @@ export default function AssinaturaDigital() {
               </>
             )}
 
-            {/* B. Versão APENAS LEITURA para o USUÁRIO COMUM */}
-            {currentUser?.isAdmin && (
-              <>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                  {/* Documento */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Documento</div>
-                    <div style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 4, background: "#f9f9f9" }}>{title}</div>
-                  </div>
-                  {/* Nº */}
-                  <div style={{ width: 200 }}>
-                    <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Nº</div>
-                    <div style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 4, background: "#f9f9f9" }}>{docNumber}</div>
-                  </div>
-                </div>
 
-                {/* Descrição da Revisão */}
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Descrição da Revisão</div>
-                  <div style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 4, background: "#f9f9f9" }}>{revisionDesc}</div>
-                </div>
-              </>
-            )}
 
-            {/*
-  ===================================================================
-  2. TABELA DE REVISÃO (Campo 'Revisado por' é o diferencial)
-  ===================================================================
-  */}
-
-            {/* A. Tabela para ADMIN (editável 'Revisado por') */}
+            {/* ============================================================
+      3. TABELA SOMENTE PARA ADMIN
+     ============================================================ */}
             {currentUser?.isAdmin && (
               <RevisionTable>
-                {/* Cabeçalho */}
                 <div style={{ fontWeight: 700 }}>Nº</div>
                 <div style={{ fontWeight: 700 }}>Descrição da Revisão</div>
                 <div style={{ fontWeight: 700 }}>Revisado por</div>
                 <div style={{ fontWeight: 700 }}>Data</div>
 
-                {/* Conteúdo */}
-                <div>{docNumber}</div>
+                {/* Inputs da tabela */}
+                <div>
+                  <StyledInput
+                    value={docNumber}
+                    onChange={(e) => setDocNumber(e.target.value)}
+                  />
+                </div>
+
                 <div>{revisionDesc}</div>
+
                 <div>
                   <StyledInput
                     value={revisedBy}
@@ -460,30 +470,15 @@ export default function AssinaturaDigital() {
                     placeholder="Digite o nome"
                   />
                 </div>
+
                 <div>{revisionDate}</div>
+
               </RevisionTable>
             )}
 
-            {/* B. Tabela para USUÁRIO NORMAL (não-editável 'Revisado por') */}
-            {currentUser?.isAdmin && (
-              <RevisionTable>
-                {/* Cabeçalho */}
-                <div style={{ fontWeight: 700 }}>Nº</div>
-                <div style={{ fontWeight: 700 }}>Descrição da Revisão</div>
-                <div style={{ fontWeight: 700 }}>Revisado por</div>
-                <div style={{ fontWeight: 700 }}>Data</div>
-
-                {/* Conteúdo: usuário normal vê somente valores */}
-                <div>{docNumber}</div>
-                <div>{revisionDesc}</div>
-                <div>
-                  {/* Apenas exibe o valor sem o input */}
-                  <div style={{ padding: "6px 8px", color: "#333" }}>{revisedBy || "-"}</div>
-                </div>
-                <div>{revisionDate}</div>
-              </RevisionTable>
-            )}
           </HeaderInfo>
+
+
 
 
         </HeaderRow>
@@ -703,6 +698,8 @@ export default function AssinaturaDigital() {
 
       {/* Botões fora do export */}
       <Actions className="no-print">
+
+        {/* Botão PDF */}
         {currentUser?.isAdmin ? (
           <Button bg="#4caf50" onClick={handleExportPDF}>
             📄 Gerar PDF
@@ -713,10 +710,19 @@ export default function AssinaturaDigital() {
           </Button>
         )}
 
-        <Button onClick={() => window.location.reload()}>
-          ♻️ Resetar
-        </Button>
+        {/* Botão Resetar */}
+        {currentUser?.isAdmin ? (
+          <Button onClick={() => window.location.reload()}>
+            Resetar
+          </Button>
+        ) : (
+          <Button bg="#999" onClick={() => alert("Apenas administrador pode Resetar.")}>
+            Resetar (somente admin)
+          </Button>
+        )}
+
       </Actions>
+
 
       <Footer>
         <div>FGI 477 rev.03</div>

@@ -4,17 +4,22 @@ import styled from "styled-components";
 import Signature from "@lemonadejs/signature/dist/react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import api from "../api";
 
-/* ====== ESTILOS GERAIS ====== */
+
 const Page = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f8fbff 0%, #e3f2fd 100%);
-  font-family: "Poppins", sans-serif;
-  color: #0d47a1;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 0;
+
+  @media (max-width: 768px) {
+    padding: 10px 0;
+  }
 `;
+
 
 const ExportWrapper = styled.div`
   width: 100%;
@@ -24,7 +29,13 @@ const ExportWrapper = styled.div`
   border-radius: 8px;
   padding: 22px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    margin: 12px;
+  }
 `;
+
 
 /* ====== CABEÇALHO ====== */
 const HeaderRow = styled.div`
@@ -32,7 +43,13 @@ const HeaderRow = styled.div`
   gap: 16px;
   align-items: center;
   margin-bottom: 12px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+  }
 `;
+
 
 const LogoBox = styled.div`
   width: 110px;
@@ -71,7 +88,6 @@ const UserInfo = styled.div`
 
 const RevisionTable = styled.div`
   width: 100%;
-  border-collapse: collapse;
   margin-top: 6px;
   display: grid;
   grid-template-columns: 1fr 2fr 1fr 1fr;
@@ -83,7 +99,21 @@ const RevisionTable = styled.div`
     font-size: 0.85rem;
     background: #f9fbff;
   }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+    font-size: 0.8rem;
+
+    & > div {
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 `;
+
 
 const Title = styled.h1`
   margin: 8px 0 6px;
@@ -97,7 +127,12 @@ const StyledInput = styled.input`
   border: 1px solid #1976d2;
   border-radius: 6px;
   font-size: 0.95rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
 `;
+
 
 const StyledTextArea = styled.textarea`
   width: 100%;
@@ -130,8 +165,17 @@ const SigBlock = styled.div`
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  min-height: 280px; /* evita quebra */
+  min-height: 280px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%; /* impede overflow */
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `;
+
+
 
 
 
@@ -145,7 +189,11 @@ const SigHeader = styled.div`
 const SigField = styled.div`
   font-size: 0.85rem;
   margin: 6px 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 `;
+
 
 const SigLine = styled.div`
   height: 110px;
@@ -157,38 +205,92 @@ const SigLine = styled.div`
   background: #f9f9f9;
   border-radius: 4px;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    height: 100px;
+  }
 `;
+
 
 
 const SigImg = styled.img`
   max-height: 90px;
+  max-width: 100%;
   width: auto;
   object-fit: contain;
   cursor: zoom-in;
 `;
 
+
 const Actions = styled.div`
   display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin: 22px 0 36px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  width: 100%;
+  max-width: 420px;   /* >>> bloco fica com largura ideal no desktop */
+  margin: 36px auto;  /* >>> centralizado com espaço */
+  padding: 20px;      /* >>> espaço interno */
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+
+  @media (max-width: 768px) {
+    max-width: 100%;  /* >>> ocupa toda a tela no mobile */
+    padding-inline: 16px;
+    margin-top: 28px;
+  }
 `;
+
+const AdminBox = styled.div`
+  margin-top: 10px;
+  padding: 12px;
+  background: #f7f7f7;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  @media (max-width: 768px) {
+    padding: 14px;
+  }
+`;
+
+const SelectStyled = styled.select`
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+`;
+
+
 
 const Button = styled.button`
   background: ${(p) => p.bg || "#2196f3"};
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  width: 100%;              /* >>> Botões agora sempre tem o mesmo tamanho */
+  max-width: 320px;         /* >>> No desktop, não ficam enormes */
+
   transition: 0.2s;
 
   &:hover {
     opacity: 0.9;
   }
 `;
+
 
 const Footer = styled.footer`
   width: 100%;
@@ -199,7 +301,15 @@ const Footer = styled.footer`
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    font-size: 0.8rem;
+  }
 `;
+
 
 const ZoomOverlay = styled.div`
   position: fixed;
@@ -229,6 +339,8 @@ const ADMIN_EMAIL = "admin@paranoa.com"; // altere para o e‑mail do administra
 
 /* ====== COMPONENTE PRINCIPAL ====== */
 export default function AssinaturaDigital() {
+
+  // 1. Estados SEM depender de currentUser:
   const [docNumber, setDocNumber] = useState("0");
   const [revisionDesc, setRevisionDesc] = useState("Elaboração Inicial");
   const [revisedBy, setRevisedBy] = useState("");
@@ -237,6 +349,24 @@ export default function AssinaturaDigital() {
   const [description, setDescription] = useState(
     "Descrição breve do documento / alteração realizada..."
   );
+
+  // 2. loggedUser SEMPRE depois dos outros useState
+  const [loggedUser, setLoggedUser] = useState(null);
+
+  // 3. Carregar usuário do localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) setLoggedUser(JSON.parse(stored));
+  }, []);
+
+  // 4. Corrigir exibição dos textos pré-preenchidos
+  useEffect(() => {
+    if (loggedUser?.isAdmin) {
+      if (!title) setTitle("FGI 477 — Histórico de Revisão");
+      if (!docNumber) setDocNumber("0");
+      if (!revisionDesc) setRevisionDesc("Elaboração Inicial");
+    }
+  }, [loggedUser]);
 
   const [blocks, setBlocks] = useState([
     { key: "elaborado", label: "ELABORADO POR:", name: "", func: "Qualidade", date: "", signature: null },
@@ -283,19 +413,25 @@ export default function AssinaturaDigital() {
     setHistory(next);
   }
 
+
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("email");
     setCurrentUser(null);
   }
 
-  function updateBlock(index, field, value) {
-    setBlocks((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: value };
-      return copy;
+  const updateBlock = (index, field, value) => {
+    setBlocks(prev => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+        edited: currentUser?.isAdmin ? true : updated[index].edited,
+      };
+      return updated;
     });
-  }
+  };
+
 
   function startSigning(index) {
     const r = sigRefs.current[index]?.current;
@@ -321,6 +457,33 @@ export default function AssinaturaDigital() {
     updateBlock(index, "date", newDate);
     setActiveSigning(null);
   }
+
+  const [selectedNumber, setSelectedNumber] = useState("");
+
+  const phoneList = [
+    { name: "Responsável 1", number: "11983626392" },
+    { name: "Responsável 2", number: "11954995521" },
+  ];
+
+
+  function enviarWhatsApp(filename) {
+    if (!selectedNumber) {
+      alert("Selecione um número de WhatsApp para enviar.");
+      return;
+    }
+
+    const message =
+      `Olá! O documento *${filename}* foi gerado.\n\n` +
+      `📎 *O PDF já foi baixado automaticamente.*\n` +
+      `Agora clique no botão de anexar e envie o arquivo.`;
+
+
+    const encoded = encodeURIComponent(message);
+    const url = `https://wa.me/${selectedNumber}?text=${encoded}`;
+
+    window.open(url, "_blank");
+  }
+
 
   /* ====== GERAR PDF (APENAS ADMIN) ====== */
   async function handleExportPDF() {
@@ -350,7 +513,11 @@ export default function AssinaturaDigital() {
     const imgProps = pdf.getImageProperties(image);
     const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
     pdf.addImage(image, "PNG", 0, 0, pageWidth, imgHeight);
-    const filename = `historico_revisao_${new Date().toISOString().split("T")[0]}.pdf`;
+
+    const filename = `historico_revisao_${new Date()
+      .toISOString()
+      .split("T")[0]}.pdf`;
+
     pdf.save(filename);
 
     // salvar entrada no histórico (não armazenamos imagens)
@@ -364,11 +531,22 @@ export default function AssinaturaDigital() {
       revisedBy,
       revisionDate,
       exportedBy: currentUser?.email || "unknown",
-      blocks: blocks.map((b) => ({ key: b.key, name: b.name, func: b.func, date: b.date, hasSignature: !!b.signature })),
+      blocks: blocks.map((b) => ({
+        key: b.key,
+        name: b.name,
+        func: b.func,
+        date: b.date,
+        hasSignature: !!b.signature,
+      })),
     };
+
     const next = [entry, ...history].slice(0, 200);
     persistHistory(next);
+
+    // ➤ Envia para WhatsApp
+    enviarWhatsApp(filename);
   }
+
 
   function clearHistory() {
     if (!currentUser?.isAdmin) return;
@@ -379,23 +557,266 @@ export default function AssinaturaDigital() {
   const saveBlock = async (index) => {
     const blk = blocks[index];
 
-    if (!blk.name || !blk.func || !blk.date || !blk.signature) {
+    // Usa strings vazias como fallback
+    const name = blk.name?.trim() || "";
+    const func = blk.func?.trim() || "";
+    const date = blk.date?.trim() || "";
+    const signature = blk.signature?.trim() || "";
+
+    if (!name || !func || !date || !signature) {
       alert("Preencha todos os campos antes de salvar.");
       return;
     }
 
     try {
-      await api.post(`/assinaturas/${docId}/block/${index}`, blk);
+      const res = await fetch(`http://localhost:4000/assinaturas/block/${index}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, func, date, signature }),
+      });
 
-      const newBlocks = [...blocks];
-      newBlocks[index].locked = true;
-      setBlocks(newBlocks);
+      const data = await res.json();
 
-      alert("Bloco salvo e travado!");
+      if (!res.ok) {
+        alert(data.error || "Erro ao salvar bloco");
+        return;
+      }
+
+      // Bloqueia todos os blocos
+      const updated = blocks.map((b, i) => ({
+        name: b.name || "",
+        func: b.func || "",
+        date: b.date || "",
+        signature: i === index ? signature : b.signature || "",
+        locked: true,
+      }));
+
+      setBlocks(updated);
+      alert("Todos os blocos foram travados após a assinatura!");
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar bloco");
+      alert("Erro ao conectar com o servidor.");
     }
+  };
+
+  useEffect(() => {
+    async function loadDoc() {
+      try {
+        const res = await fetch(`http://localhost:4000/assinaturas/doc`);
+        const data = await res.json();
+
+        if (!data.blocks) return;
+
+        setBlocks(
+          data.blocks.map((b, i) => ({
+            name: b.name || "",
+            func:
+              b.func ||
+              (i === 0 ? "Qualidade" :
+                i === 1 ? "Manufatura" :
+                  i === 2 ? "Manutenção" :
+                    i === 3 ? "Engenharia" :
+                      ""),
+            date: b.date || "",
+            signature: b.signature || "",
+            locked: b.locked ?? false,
+          }))
+        );
+
+        // carrega também título, descrição, revisão etc.
+        setTitle(data.title || "");
+        setDocNumber(data.docNumber || "");
+        setRevisionDesc(data.revisionDesc || "");
+        setRevisedBy(data.revisedBy || "");
+        setRevisionDate(data.revisionDate || "");
+        setDescription(data.description || "");
+      } catch (err) {
+        console.error("Erro ao carregar documento:", err);
+      }
+    }
+
+    loadDoc();
+  }, []);
+
+  async function handleReset() {
+    if (!currentUser?.isAdmin) {
+      alert("Apenas administrador pode Resetar.");
+      return;
+    }
+
+    if (!confirm("Tem certeza que deseja resetar todas as assinaturas?")) return;
+
+    try {
+      const res = await fetch("http://localhost:4000/assinaturas/reset", {
+        method: "POST",
+      });
+
+      const data = await res.json();
+      if (!data.ok) {
+        alert("Erro ao resetar.");
+        return;
+      }
+
+      // Reset local
+      setBlocks([
+        { key: "elaborado", label: "ELABORADO POR:", name: "", func: "Qualidade", date: "", signature: null, locked: false },
+        { key: "aprov1", label: "APROVADO POR:", name: "", func: "Manufatura", date: "", signature: null, locked: false },
+        { key: "aprov2", label: "APROVADO POR:", name: "", func: "Manutenção", date: "", signature: null, locked: false },
+        { key: "aprov3", label: "APROVADO POR:", name: "", func: "Engenharia", date: "", signature: null, locked: false },
+      ]);
+
+      alert("Assinaturas resetadas com sucesso!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao conectar ao servidor.");
+    }
+  }
+
+
+  // ====== CONTROLE DE USUÁRIOS (ADMIN) ======
+  const [users, setUsers] = useState([]);
+  const [usersLoaded, setUsersLoaded] = useState(false);
+
+  // Atualiza campo do usuário individualmente
+  function updateUserField(id, field, value) {
+    setUsers((prev) =>
+      prev.map((u) => (u._id === id ? { ...u, [field]: value } : u))
+    );
+  }
+
+  async function loadUsers() {
+    try {
+      const res = await fetch("http://localhost:4000/admin/users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      // CORREÇÃO AQUI 👇👇👇
+      setUsers(Array.isArray(data) ? data : []);
+
+      setUsersLoaded(true);
+    } catch (err) {
+      alert("Erro ao carregar usuários.");
+    }
+  }
+
+
+  // Salvar alterações do usuário
+  async function saveUser(id) {
+    const user = users.find((u) => u._id === id);
+    if (!user) return;
+
+    try {
+      // Monta o payload sem incluir password caso esteja vazio
+      const payload = {
+        name: user.name,
+        email: user.email,
+      };
+
+      if (user.tempPass && user.tempPass.trim() !== "") {
+        payload.password = user.tempPass.trim();
+      }
+
+      const res = await fetch(`http://localhost:4000/admin/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // Se a resposta não for JSON, evita crash
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: "Erro inesperado no servidor." };
+      }
+
+      if (!res.ok) {
+        alert(data.error || "Erro ao salvar usuário.");
+        return;
+      }
+
+      alert("Usuário atualizado!");
+
+      // recarrega lista
+      loadUsers();
+
+    } catch (err) {
+      alert("Erro ao conectar com o servidor.");
+    }
+  }
+
+
+  // Excluir usuário
+  async function deleteUser(id) {
+    if (!confirm("Deseja excluir este usuário?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:4000/admin/users/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Erro ao excluir usuário.");
+        return;
+      }
+
+      alert("Usuário removido!");
+      loadUsers();
+    } catch (err) {
+      alert("Erro ao conectar com servidor.");
+    }
+  }
+
+  const saveAdminEdit = async (index) => {
+    try {
+      const block = blocks[index];
+
+      await api.put(`/assinaturas/block/${index}`, {
+        name: block.name,
+        func: block.func,
+        date: block.date,
+        signature: block.signature,
+      });
+
+      alert("Alteração salva!");
+
+      // 🔥 limpa o estado edited
+      setBlocks(prev => {
+        const updated = [...prev];
+        updated[index].edited = false;
+        return updated;
+      });
+
+      // ❌ REMOVIDO - função inexistente que gerava erro
+      // fetchDocument();
+
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar alteração");
+    }
+  };
+
+
+
+
+  const markEdited = (index) => {
+    setBlocks(prev => {
+      const updated = [...prev];
+      updated[index].edited = true;
+      return updated;
+    });
   };
 
 
@@ -413,30 +834,72 @@ export default function AssinaturaDigital() {
           <HeaderInfo>
 
             {/* ============================================================
-      1. CAMPOS EDITÁVEIS (APENAS ADMIN)
-     ============================================================ */}
+    1. CAMPOS EDITÁVEIS (APENAS ADMIN)
+============================================================ */}
             {currentUser?.isAdmin && (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-
+                {/* Linha: Documento + Número */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 12,
+                  }}
+                >
                   {/* Documento */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Documento</div>
-                    <StyledInput value={title} onChange={(e) => setTitle(e.target.value)} />
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#444",
+                        fontWeight: 700,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Documento
+                    </div>
+                    <StyledInput
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
                   </div>
 
                   {/* Nº (ADMIN EDITA) */}
                   <div style={{ width: 200 }}>
-                    <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Nº</div>
-                    <StyledInput value={docNumber} onChange={(e) => setDocNumber(e.target.value)} />
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#444",
+                        fontWeight: 700,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Nº
+                    </div>
+                    <StyledInput
+                      value={docNumber}
+                      onChange={(e) => setDocNumber(e.target.value)}
+                    />
                   </div>
-
                 </div>
 
                 {/* Descrição da Revisão */}
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 12, color: "#444", fontWeight: 700 }}>Descrição da Revisão</div>
-                  <StyledInput value={revisionDesc} onChange={(e) => setRevisionDesc(e.target.value)} />
+                <div style={{ marginTop: 10 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#444",
+                      fontWeight: 700,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Descrição da Revisão
+                  </div>
+                  <StyledInput
+                    value={revisionDesc}
+                    onChange={(e) => setRevisionDesc(e.target.value)}
+                  />
                 </div>
               </>
             )}
@@ -446,6 +909,7 @@ export default function AssinaturaDigital() {
             {/* ============================================================
       3. TABELA SOMENTE PARA ADMIN
      ============================================================ */}
+            {/* TABELA SOMENTE PARA ADMIN */}
             {currentUser?.isAdmin && (
               <RevisionTable>
                 <div style={{ fontWeight: 700 }}>Nº</div>
@@ -453,7 +917,7 @@ export default function AssinaturaDigital() {
                 <div style={{ fontWeight: 700 }}>Revisado por</div>
                 <div style={{ fontWeight: 700 }}>Data</div>
 
-                {/* Inputs da tabela */}
+                {/* Nº */}
                 <div>
                   <StyledInput
                     value={docNumber}
@@ -461,8 +925,16 @@ export default function AssinaturaDigital() {
                   />
                 </div>
 
-                <div>{revisionDesc}</div>
+                {/* Descrição da Revisão — AGORA COM INPUT */}
+                <div>
+                  <StyledInput
+                    value={revisionDesc}
+                    onChange={(e) => setRevisionDesc(e.target.value)}
+                    placeholder="Descrição da revisão"
+                  />
+                </div>
 
+                {/* Revisado por */}
                 <div>
                   <StyledInput
                     value={revisedBy}
@@ -471,10 +943,17 @@ export default function AssinaturaDigital() {
                   />
                 </div>
 
-                <div>{revisionDate}</div>
-
+                {/* Data — AGORA COM INPUT */}
+                <div>
+                  <StyledInput
+                    type="date"
+                    value={revisionDate}
+                    onChange={(e) => setRevisionDate(e.target.value)}
+                  />
+                </div>
               </RevisionTable>
             )}
+
 
           </HeaderInfo>
 
@@ -485,7 +964,7 @@ export default function AssinaturaDigital() {
 
         {currentUser?.isAdmin && (
           <div style={{ marginTop: 16 }}>
-            <Title>{title}</Title>
+            <Title>Descrição da Assinatura</Title>
             <StyledTextArea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -493,162 +972,100 @@ export default function AssinaturaDigital() {
           </div>
         )}
 
+
         <SignaturesArea>
-          {blocks.map((b, i) => (
-            <SigBlock key={b.key}>
-              <div>
-                <SigHeader>{b.label}</SigHeader>
-                <SigField>
-                  <div style={{ fontWeight: 700 }}>NOME:</div>
-                  <StyledInput
-                    value={b.name}
-                    onChange={(e) => updateBlock(i, "name", e.target.value)}
-                  />
-                </SigField>
-                <SigField>
-                  <div style={{ fontWeight: 700 }}>FUNÇÃO:</div>
-                  <StyledInput
-                    value={b.func}
-                    onChange={(e) => updateBlock(i, "func", e.target.value)}
-                  />
-                </SigField>
-                <SigField>
-                  <div style={{ fontWeight: 700 }}>DATA:</div>
-                  <StyledInput
-                    value={b.date}
-                    onChange={(e) => updateBlock(i, "date", e.target.value)}
-                  />
-                </SigField>
-              </div>
+          {blocks.map((b, i) => {
+            const readyToSave =
+              b.name.trim() !== "" &&
+              b.func.trim() !== "" &&
+              b.date.trim() !== "" &&
+              b.signature;
 
-              <SigLine>
-                {!b.signature ? (
-                  <div style={{ textAlign: "center", width: "100%" }}>
-                    <div style={{ fontSize: 12, color: "#999", marginBottom: 6 }}>
-                      Assinatura
-                    </div>
-                    <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                      <button
-                        onClick={() => startSigning(i)}
-                        style={{
-                          border: "1px solid #bbb",
-                          background: "#fff",
-                          padding: "6px 8px",
-                          borderRadius: 6,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Assinar
-                      </button>
-                      <button
-                        onClick={() => clearSigning(i)}
-                        style={{
-                          border: "1px solid #bbb",
-                          background: "#fff",
-                          padding: "6px 8px",
-                          borderRadius: 6,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Limpar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <SigImg
-                    src={b.signature}
-                    alt="assinatura"
-                    onClick={() => setZoomed(b.signature)}
-                  />
-                )}
-              </SigLine>
+            return (
+              <SigBlock key={b.key}>
+                <div>
+                  <SigHeader>{b.label}</SigHeader>
 
-              {activeSigning === i && (
-                <div
-                  style={{
-                    position: "fixed",
-                    inset: 0,
-                    background: "rgba(0,0,0,0.5)",
-                    zIndex: 20000,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 20,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "95%",
-                      maxWidth: 720,
-                      background: "#fff",
-                      borderRadius: 8,
-                      padding: 18,
-                      boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                  {/* NOME */}
+                  <SigField>
+                    <div style={{ fontWeight: 700 }}>NOME:</div>
+                    <StyledInput
+                      value={b.name}
+                      onChange={(e) => {
+                        updateBlock(i, "name", e.target.value);
+                        markEdited(i);
                       }}
-                    >
-                      <div style={{ fontWeight: 700, color: "#111" }}>
-                        Faça sua assinatura
-                      </div>
-                      <div>
-                        <button
-                          onClick={() => setActiveSigning(null)}
-                          style={{
-                            border: "none",
-                            background: "#f5f5f5",
-                            padding: "6px 10px",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                            marginRight: 8,
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          onClick={() => concludeSigning(i)}
-                          style={{
-                            border: "none",
-                            background: "#4caf50",
-                            color: "white",
-                            padding: "8px 12px",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Concluir
-                        </button>
-                      </div>
-                    </div>
+                      disabled={b.locked && !currentUser?.isAdmin}
+                      readOnly={b.locked && !currentUser?.isAdmin}
+                    />
+                  </SigField>
 
-                    <div style={{ marginTop: 12 }}>
-                      <Signature
-                        ref={sigRefs.current[i]}
-                        width={700}
-                        height={160}
-                        style={{ width: "100%", height: "160px" }}
-                        line={2}
-                        instructions="Assine aqui"
-                      />
+                  {/* FUNÇÃO */}
+                  <SigField>
+                    <div style={{ fontWeight: 700 }}>FUNÇÃO:</div>
+                    <StyledInput
+                      value={b.func}
+                      onChange={(e) => {
+                        updateBlock(i, "func", e.target.value);
+                        markEdited(i);
+                      }}
+                      disabled={b.locked && !currentUser?.isAdmin}
+                      readOnly={b.locked && !currentUser?.isAdmin}
+                    />
+                  </SigField>
+
+                  {/* DATA */}
+                  <SigField>
+                    <div style={{ fontWeight: 700 }}>DATA:</div>
+                    <StyledInput
+                      value={b.date}
+                      onChange={(e) => {
+                        updateBlock(i, "date", e.target.value);
+                        markEdited(i);
+                      }}
+                      disabled={b.locked && !currentUser?.isAdmin}
+                      readOnly={b.locked && !currentUser?.isAdmin}
+                    />
+                  </SigField>
+                </div>
+
+                {/* ÁREA DE ASSINATURA */}
+                <SigLine>
+                  {!b.signature ? (
+                    <div style={{ textAlign: "center", width: "100%" }}>
+                      <div style={{ fontSize: 12, color: "#999", marginBottom: 6 }}>
+                        Assinatura
+                      </div>
+
                       <div
                         style={{
                           display: "flex",
-                          justifyContent: "flex-end",
-                          marginTop: 8,
+                          gap: 8,
+                          justifyContent: "center",
                         }}
                       >
                         <button
-                          onClick={() => clearSigning(i)}
+                          onClick={() => startSigning(i)}
                           style={{
-                            border: "none",
-                            background: "#f44336",
-                            color: "white",
-                            padding: "6px 10px",
+                            border: "1px solid #bbb",
+                            background: "#fff",
+                            padding: "6px 8px",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Assinar
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            clearSigning(i);
+                            markEdited(i);
+                          }}
+                          style={{
+                            border: "1px solid #bbb",
+                            background: "#fff",
+                            padding: "6px 8px",
                             borderRadius: 6,
                             cursor: "pointer",
                           }}
@@ -657,71 +1074,368 @@ export default function AssinaturaDigital() {
                         </button>
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
-            </SigBlock>
-          ))}
-        </SignaturesArea>
+                  ) : (
+                    <SigImg
+                      src={b.signature}
+                      alt="assinatura"
+                      onClick={() => startSigning(i)}
+                      style={{ cursor: "zoom-in" }}
+                    />
+                  )}
+                </SigLine>
 
-        {/* Histórico visível apenas para admin */}
-        {currentUser?.isAdmin && (
-          <div style={{ marginTop: 18 }}>
-            <Title>Histórico de Geração</Title>
-            <div style={{ marginTop: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: 14, color: "#333" }}>{history.length} registros</div>
-                <div>
-                  <Button bg="#f44336" onClick={clearHistory}>Limpar Histórico</Button>
-                </div>
-              </div>
+                {/* 🔥 BOTÃO “SALVAR ALTERAÇÃO” — FORA DO MODAL */}
+                {currentUser?.isAdmin && b.edited && (
+                  <button
+                    onClick={() => saveAdminEdit(i)}
+                    style={{
+                      marginTop: 12,
+                      padding: "8px 12px",
+                      background: "#ff9800",
+                      color: "white",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      border: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Salvar Alteração
+                  </button>
+                )}
 
-              <div style={{ marginTop: 10, maxHeight: 220, overflow: "auto", border: "1px solid #eee", padding: 8, borderRadius: 6, background: "#fafafa" }}>
-                {history.length === 0 ? (
-                  <div style={{ color: "#666" }}>Sem registros.</div>
-                ) : (
-                  history.map((h) => (
-                    <div key={h.id} style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{h.filename}</div>
-                      <div style={{ fontSize: 12, color: "#555" }}>{new Date(h.date).toLocaleString()} — por {h.exportedBy}</div>
-                      <div style={{ fontSize: 12, color: "#333", marginTop: 6 }}>
-                        Doc: {h.docNumber} — {h.title}
+                {/* BOTÃO SALVAR (USUÁRIO NORMAL) */}
+                {!b.locked && readyToSave && !currentUser?.isAdmin && (
+                  <button
+                    onClick={() => saveBlock(i)}
+                    style={{
+                      marginTop: 12,
+                      padding: "6px 10px",
+                      background: "#1976d2",
+                      color: "white",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      border: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Salvar
+                  </button>
+                )}
+
+                {/* MODAL DE ASSINATURA */}
+                {activeSigning === i && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      background: "rgba(0,0,0,0.5)",
+                      zIndex: 20000,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 20,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "95%",
+                        maxWidth: 720,
+                        background: "#fff",
+                        borderRadius: 8,
+                        padding: 18,
+                        boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, color: "#111" }}>
+                          Faça sua assinatura
+                        </div>
+
+                        <button
+                          onClick={() => setActiveSigning(null)}
+                          style={{
+                            border: "none",
+                            background: "#f5f5f5",
+                            padding: "6px 10px",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+
+                      <div style={{ marginTop: 12 }}>
+                        <Signature
+                          ref={sigRefs.current[i]}
+                          width={700}
+                          height={160}
+                          style={{ width: "100%", height: "160px" }}
+                          line={2}
+                          instructions="Assine aqui"
+                        />
+
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            marginTop: 8,
+                            gap: 8,
+                          }}
+                        >
+                          <button
+                            onClick={() => {
+                              clearSigning(i);
+                              markEdited(i);
+                            }}
+                            style={{
+                              border: "1px solid #bbb",
+                              background: "#fff",
+                              padding: "6px 8px",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Limpar
+                          </button>
+
+                          <button
+                            onClick={() => concludeSigning(i)}
+                            style={{
+                              border: "none",
+                              background: "#4caf50",
+                              color: "white",
+                              padding: "8px 12px",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Concluir
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ))
+                  </div>
                 )}
+              </SigBlock>
+            );
+          })}
+        </SignaturesArea>
+
+      </ExportWrapper>
+
+
+
+      {/* Histórico visível apenas para admin */}
+      {currentUser?.isAdmin && (
+        <div style={{ marginTop: 18 }}>
+          <Title>Histórico de Geração</Title>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 14, color: "#333" }}>{history.length} registros</div>
+              <div>
+                <Button bg="#f44336" onClick={clearHistory}>Limpar Histórico</Button>
               </div>
             </div>
+
+            <div style={{ marginTop: 10, maxHeight: 220, overflow: "auto", border: "1px solid #eee", padding: 8, borderRadius: 6, background: "#fafafa" }}>
+              {history.length === 0 ? (
+                <div style={{ color: "#666" }}>Sem registros.</div>
+              ) : (
+                history.map((h) => (
+                  <div key={h.id} style={{ padding: 8, borderBottom: "1px solid #eee" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{h.filename}</div>
+                    <div style={{ fontSize: 12, color: "#555" }}>{new Date(h.date).toLocaleString()} — por {h.exportedBy}</div>
+                    <div style={{ fontSize: 12, color: "#333", marginTop: 6 }}>
+                      Doc: {h.docNumber} — {h.title}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        )}
-      </ExportWrapper>
+        </div>
+      )}
+
 
       {/* Botões fora do export */}
       <Actions className="no-print">
 
-        {/* Botão PDF */}
-        {currentUser?.isAdmin ? (
-          <Button bg="#4caf50" onClick={handleExportPDF}>
-            📄 Gerar PDF
-          </Button>
-        ) : (
-          <Button bg="#999" onClick={() => alert("Apenas administrador pode gerar PDF.")}>
+        {/* Área ADMIN — enviar e gerar PDF */}
+        {currentUser?.isAdmin && (
+          <AdminBox>
+            <label style={{ fontWeight: 600 }}>Enviar para:</label>
+
+            <SelectStyled
+              value={selectedNumber}
+              onChange={(e) => setSelectedNumber(e.target.value)}
+            >
+              <option value="">Selecione um número...</option>
+              {phoneList.map((p, index) => (
+                <option key={index} value={p.number}>
+                  {p.name} — {p.number}
+                </option>
+              ))}
+            </SelectStyled>
+
+            <Button
+              bg="#25D366"
+              onClick={async () => {
+                await handleExportPDF();
+                enviarWhatsApp();
+              }}
+            >
+              📄 Gerar PDF e Enviar
+            </Button>
+          </AdminBox>
+        )}
+
+        {/* Botão PDF somente admin */}
+        {!currentUser?.isAdmin && (
+          <Button
+            bg="#999"
+            onClick={() => alert("Apenas administrador pode gerar PDF.")}
+          >
             📄 Gerar PDF (somente admin)
           </Button>
         )}
 
         {/* Botão Resetar */}
         {currentUser?.isAdmin ? (
-          <Button onClick={() => window.location.reload()}>
+          <Button onClick={handleReset}>
             Resetar
           </Button>
         ) : (
-          <Button bg="#999" onClick={() => alert("Apenas administrador pode Resetar.")}>
+          <Button
+            bg="#999"
+            onClick={() => alert("Apenas administrador pode Resetar.")}
+          >
             Resetar (somente admin)
           </Button>
         )}
 
       </Actions>
+
+
+
+
+      {currentUser?.isAdmin && (
+        <div style={{ marginTop: 28 }}>
+          <Title>Usuários Registrados</Title>
+
+          <div>
+
+            {/* BOTÃO PARA CARREGAR USUÁRIOS */}
+            {!usersLoaded && (
+              <Button
+                onClick={loadUsers}
+                bg="#1976d2"
+                style={{ marginBottom: 10 }}
+              >
+                Carregar usuários
+              </Button>
+            )}
+
+            {/* NENHUM USUÁRIO */}
+            {usersLoaded && users.length === 0 && (
+              <div style={{ color: "#666", marginTop: 10 }}>
+                Nenhum usuário cadastrado.
+              </div>
+            )}
+
+            {/* LISTA DE USUÁRIOS */}
+            {usersLoaded && users.length > 0 && (
+              <div
+                style={{
+                  marginTop: 10,
+                  border: "1px solid #eee",
+                  padding: 12,
+                  borderRadius: 6,
+                  maxHeight: 260,
+                  overflow: "auto",
+                  background: "#fafafa",
+                }}
+              >
+                {users.map((u) => (
+                  <div
+                    key={u._id}
+                    style={{
+                      padding: 12,
+                      borderBottom: "1px solid #ddd",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}
+                  >
+                    <div style={{ fontWeight: 700 }}>
+                      {u.nome} — {u.email}
+                    </div>
+
+                    {/* CAMPOS EDITÁVEIS */}
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <input
+                        type="text"
+                        placeholder="Nome"
+                        value={u.nome}
+                        onChange={(e) =>
+                          updateUserField(u._id, "nome", e.target.value)
+                        }
+                        style={{ flex: 1, padding: 6 }}
+                      />
+
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={u.email}
+                        onChange={(e) =>
+                          updateUserField(u._id, "email", e.target.value)
+                        }
+                        style={{ flex: 1, padding: 6 }}
+                      />
+
+                      <input
+                        type="password"
+                        placeholder="Nova senha (opcional)"
+                        value={u.senhaTemp || ""}
+                        onChange={(e) =>
+                          updateUserField(u._id, "senhaTemp", e.target.value)
+                        }
+                        style={{ width: 160, padding: 6 }}
+                      />
+                    </div>
+
+                    <div style={{ display: "flex", gap: 10 }}>
+                      {/* SALVAR */}
+                      <Button bg="#4caf50" onClick={() => saveUser(u._id)}>
+                        Salvar
+                      </Button>
+
+                      {/* EXCLUIR (não pode excluir ele mesmo) */}
+                      <Button
+                        bg="#f44336"
+                        disabled={!currentUser?.isAdmin || u.email === currentUser.email}
+                        onClick={() => deleteUser(u._id)}
+                      >
+                        Excluir
+                      </Button>
+
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+
+
 
 
       <Footer>

@@ -1,11 +1,14 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-const gerarToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+const gerarToken = (usuario) => {
+  return jwt.sign(
+    { id: usuario._id, email: usuario.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '30d' }
+  );
 };
 
-// Cadastrar novo usuário
 exports.registrarUsuario = async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
@@ -14,21 +17,22 @@ exports.registrarUsuario = async (req, res) => {
     if (existe) return res.status(400).json({ mensagem: 'Usuário já cadastrado' });
 
     const novoUsuario = await User.create({ nome, email, senha });
+
     res.status(201).json({
       _id: novoUsuario._id,
       nome: novoUsuario.nome,
       email: novoUsuario.email,
-      token: gerarToken(novoUsuario._id),
+      token: gerarToken(novoUsuario),
     });
   } catch (error) {
     res.status(500).json({ mensagem: error.message });
   }
 };
 
-// Login
 exports.loginUsuario = async (req, res) => {
   try {
     const { email, senha } = req.body;
+
     const usuario = await User.findOne({ email });
 
     if (usuario && (await usuario.compararSenha(senha))) {
@@ -36,7 +40,7 @@ exports.loginUsuario = async (req, res) => {
         _id: usuario._id,
         nome: usuario.nome,
         email: usuario.email,
-        token: gerarToken(usuario._id),
+        token: gerarToken(usuario),
       });
     } else {
       res.status(401).json({ mensagem: 'Credenciais inválidas' });
@@ -46,22 +50,20 @@ exports.loginUsuario = async (req, res) => {
   }
 };
 
-// Listar todos
+// Funções administrativas
 exports.listarUsuarios = async (req, res) => {
   const usuarios = await User.find().select('-senha');
   res.json(usuarios);
 };
 
-// Atualizar
 exports.atualizarUsuario = async (req, res) => {
   const { id } = req.params;
   const dados = req.body;
 
-  const usuario = await User.findByIdAndUpdate(id, dados, { new: true });
+  const usuario = await User.findByIdAndUpdate(id, dados, { new: true }).select("-senha");
   res.json(usuario);
 };
 
-// Deletar
 exports.deletarUsuario = async (req, res) => {
   const { id } = req.params;
   await User.findByIdAndDelete(id);

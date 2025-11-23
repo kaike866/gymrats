@@ -13,6 +13,15 @@ app.use(express.json());
 const assinaturaRoutes = require("./routes/assinaturaRoutes");
 app.use("/assinaturas", assinaturaRoutes);
 
+
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+
+app.use("/api", userRoutes);
+app.use("/admin", adminRoutes);
+
+
+
 // === Conexão MongoDB ===
 mongoose
   .connect(process.env.MONGO_URI)
@@ -36,72 +45,108 @@ const auth = (req, res, next) => {
 };
 
 // === ROTAS ===
-
-// Registrar
 app.post("/register", async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
-    const existingUser = await User.findOne({ email });
 
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email já registrado." });
     }
 
-    const hashedPassword = await bcrypt.hash(senha, 10);
-    const newUser = new User({ nome, email, senha: hashedPassword });
+    const newUser = new User({ nome, email, senha });
 
     await newUser.save();
     res.status(201).json({ message: "Usuário registrado com sucesso!" });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao registrar usuário." });
   }
 });
 
-// Login
-app.post("/login", async (req, res) => {
-  const { email, senha } = req.body;
 
-  // Admin
-  if (email === "admin@gmail.com" && senha === process.env.ADMIN_PASSWORD) {
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({ error: "Email e senha são obrigatórios." });
+    }
+
+    // ADMIN FIXO
+    if (email === "admin@paranoa.com" && senha === "admin123") {
+      const token = jwt.sign(
+        { email, isAdmin: true },
+        process.env.JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+
+      return res.json({
+        token,
+        email,
+        nome: "Administrador",
+        isAdmin: true,
+      });
+    }
+
+    // USUÁRIO NORMAL
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "Usuário não encontrado." });
+    }
+
+    const senhaCorreta = await bcrypt.compare(senha, user.senha);
+    if (!senhaCorreta) {
+      return res.status(400).json({ error: "Senha incorreta." });
+    }
+
     const token = jwt.sign(
-      { email: "admin@gmail.com", role: "admin" },
+      { id: user._id, email: user.email, isAdmin: false },
       process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );
-    return res.json({ token, email });
+
+    res.json({
+      token,
+      email: user.email,
+      nome: user.nome,
+      isAdmin: false,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro no servidor." });
   }
-
-  // Usuário comum
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ error: "Usuário não encontrado." });
-
-  const valid = await bcrypt.compare(senha, user.senha);
-  if (!valid) return res.status(400).json({ error: "Senha incorreta." });
-
-  const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "2h",
-  });
-
-  return res.json({ token, email: user.email });
 });
 
-// Listar usuários
-app.get("/", async (req, res) => {
+
+
+
+// ===== Middleware admin =====
+function authAdmin(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Token não fornecido." });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (decoded.email === "admin@gmail.com") {
-      const users = await User.find().select("-senha");
-      return res.json(users);
+    if (!decoded.isAdmin) {
+      return res.status(403).json({ error: "Apenas administrador." });
     }
 
-    return res.status(403).json({ error: "Apenas o administrador pode visualizar os usuários." });
+    next();
   } catch {
-    return res.status(403).json({ error: "Token inválido." });
+    res.status(403).json({ error: "Token inválido." });
   }
+}
+
+// ===== Listar usuários (somente admin) =====
+app.get("/", authAdmin, async (req, res) => {
+  const users = await User.find().select("-senha");
+  return res.json(users);
 });
+
 
 // Remover usuário
 app.delete("/:id", auth, async (req, res) => {

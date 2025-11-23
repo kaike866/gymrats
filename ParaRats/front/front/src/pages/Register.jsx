@@ -26,7 +26,7 @@ const Canvas = styled.canvas`
 
 const Card = styled.div`
   position: relative;
-  background: rgba(0, 0, 0, 0.795);
+  background: linear-gradient(90deg, #0b1f3a 0%, #052b6b 100%);
   border: 1px solid #0a64da;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(79, 152, 247, 0.4);
 
@@ -90,7 +90,7 @@ color: #fff;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px #136ee6;
+    box-shadow: 0 4px 14px #0e2aa5;
     filter: brightness(1.1);
   transform: translateY(-2px);
   }
@@ -217,7 +217,7 @@ function Register() {
         >
           <AnimatedLogo src={logoParanoa} alt="Paranoá" />
           <h2 style={{ color: "#4f98f7", fontWeight: 600, fontSize: "1.6rem" }}>
-            ARANOÁ
+            PARANOÁ
           </h2>
         </div>
 

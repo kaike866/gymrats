@@ -1,44 +1,95 @@
 const express = require("express");
 const router = express.Router();
-const Assinatura = require("../models/Assinatura"); // ajuste para o nome do seu model
+const Assinatura = require("../models/Assinatura");
 
+// 🔧 Nome fixo do documento usado em TODAS as rotas
+const DOC_NAME = "documento-principal";
 
-// SALVAR BLOCO DE ASSINATURA
-router.post("/:docId/block/:index", async (req, res) => {
+const { authAdmin } = require("../middleware/authAdmin.js");
+
+router.put("/block/:index", authAdmin, async (req, res) => {
+
   try {
-    const { docId, index } = req.params;
+    const { index } = req.params;
     const { name, func, date, signature } = req.body;
 
-    // Validação básica
-    if (!name || !func || !date || !signature) {
-      return res.status(400).json({ error: "Campos incompletos." });
-    }
+    let doc = await Assinatura.findOne({ documentName: DOC_NAME });
+    if (!doc) return res.status(404).json({ error: "Documento não encontrado" });
 
-    // Busca o documento
-    let doc = await Assinatura.findById(docId);
-    if (!doc) {
-      return res.status(404).json({ error: "Documento não encontrado." });
-    }
-
-    // Garante que blocks existe
-    if (!doc.blocks || !doc.blocks[index]) {
+    if (!doc.blocks[index]) {
       return res.status(400).json({ error: "Bloco inválido." });
     }
 
-    // Atualiza o bloco
-    doc.blocks[index].name = name;
-    doc.blocks[index].func = func;
-    doc.blocks[index].date = date;
-    doc.blocks[index].signature = signature;
-    doc.blocks[index].locked = true;
+    // Permitir somente admin (precisa middleware)
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Apenas administrador pode editar." });
+    }
+
+    // Atualiza bloco
+    doc.blocks[index] = {
+      ...doc.blocks[index],
+      name,
+      func,
+      date,
+      signature,
+      locked: true, // continua travado
+    };
 
     await doc.save();
 
-    return res.json({ message: "Bloco salvo com sucesso!", doc });
+    res.json({ message: "Bloco alterado!", doc });
   } catch (err) {
-    console.error("Erro ao salvar bloco:", err);
-    return res.status(500).json({ error: "Erro no servidor." });
+    console.error(err);
+    res.status(500).json({ error: "Erro ao editar bloco." });
   }
 });
 
+
+// 🔹 CARREGAR DOCUMENTO --------------------------------------------
+router.get("/doc", async (req, res) => {
+  try {
+    let doc = await Assinatura.findOne({ documentName: DOC_NAME });
+
+    if (!doc) {
+      doc = await Assinatura.create({
+        documentName: DOC_NAME,
+        blocks: [{}, {}, {}, {}],
+      });
+    }
+
+    return res.json(doc);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erro ao carregar documento." });
+  }
+});
+
+// 🔹 RESETAR DOCUMENTO ---------------------------------------------
+router.post("/reset", async (req, res) => {
+  try {
+    const defaultBlocks = [
+      { name: "", func: "", date: "", signature: "", locked: false },
+      { name: "", func: "", date: "", signature: "", locked: false },
+      { name: "", func: "", date: "", signature: "", locked: false },
+      { name: "", func: "", date: "", signature: "", locked: false },
+    ];
+
+    await Assinatura.updateOne(
+      { documentName: DOC_NAME },
+      {
+        $set: {
+          blocks: defaultBlocks,
+        },
+      },
+      { upsert: true }
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao resetar" });
+  }
+});
+
+// Exporta router corretamente
 module.exports = router;

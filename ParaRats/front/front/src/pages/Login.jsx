@@ -1,10 +1,9 @@
-// ...existing code...
+// Login.jsx corrigido
 import React, { useState, useEffect, useRef } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import logoParanoa from "../assets/paranoalogosemfundo.png";
-
 
 const Container = styled.div`
   position: relative;
@@ -12,7 +11,6 @@ const Container = styled.div`
   width: 100%;
   overflow: hidden;
   background: linear-gradient(180deg, #f7f9fc 0%, #eaf1fb 100%);
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,10 +27,8 @@ const Canvas = styled.canvas`
 const Card = styled.div`
   position: relative;
   background: linear-gradient(90deg, #0b1f3a 0%, #052b6b 100%);
-
   border: 1px solid #0a64da;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(79, 152, 247, 0.4);
-
   border-radius: 16px;
   padding: 50px 35px;
   text-align: center;
@@ -40,14 +36,6 @@ const Card = styled.div`
   width: 380px;
   z-index: 2;
   font-family: "Poppins", sans-serif;
-`;
-
-
-const Title = styled.h2`
-  color: #fff;
-  margin-bottom: 8px;
-  font-size: 1.6rem;
-  letter-spacing: 1px;
 `;
 
 const Subtitle = styled.p`
@@ -67,37 +55,31 @@ const Input = styled.input`
   font-size: 0.95rem;
   outline: none;
   transition: 0.3s;
-  box-sizing: border-box; /* 🔹 garante que todos os inputs fiquem exatamente do mesmo tamanho */
-
+  box-sizing: border-box;
   &:focus {
     border-color: #076bee;
     box-shadow: 0 0 8px #4f98f7;
   }
-
   &::placeholder {
     color: #aaa;
   }
 `;
 
-
 const Button = styled.button`
   width: 100%;
   background: linear-gradient(90deg, #4f98f7, #0056d6);
-color: #fff;
- border: none;
-
+  color: #fff;
+  border: none;
   font-weight: 700;
   padding: 12px;
   border-radius: 10px;
   cursor: pointer;
   transition: 0.3s;
   margin-top: 10px;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 14px #0e2aa5;
     filter: brightness(1.1);
-  transform: translateY(-2px);
   }
 `;
 
@@ -105,20 +87,17 @@ const RegisterLink = styled.p`
   margin-top: 12px;
   font-size: 0.85rem;
   color: #ccc;
-
   a {
     color: #4f98f7;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-
     &:hover {
       text-decoration: underline;
     }
   }
 `;
 
-// 🔹 1. Define a animação primeiro
 const floatLogo = keyframes`
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -130,17 +109,12 @@ const AnimatedLogo = styled.img`
   animation: ${floatLogo} 3s ease-in-out infinite;
 `;
 
-// Demo admin credentials
-const DEMO_ADMIN_EMAIL = "admin@paranoa.com";
-const DEMO_ADMIN_PASS = "admin123";
-
 function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const navigate = useNavigate();
   const canvasRef = useRef(null);
 
-  // 🔹 Efeito de partículas (igual ao Register)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -159,6 +133,7 @@ function Login() {
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#0e2aa5";
+
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -201,43 +176,29 @@ function Login() {
     };
   }, []);
 
-  const handleSuccessfulLogin = (token, userEmail, isAdminFlag) => {
-    localStorage.setItem("token", token || ""); 
-    localStorage.setItem("email", userEmail || "");
-    localStorage.setItem("isAdmin", isAdminFlag ? "1" : "0");
+  const handleSuccessfulLogin = (token, email, nome, isAdmin) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("email", email);
+    localStorage.setItem("nome", nome);
+    localStorage.setItem("isAdmin", isAdmin ? "1" : "0");
     navigate("/assinatura");
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // fallback demo while backend admin may not exist
-    if (email === DEMO_ADMIN_EMAIL && senha === DEMO_ADMIN_PASS) {
-      handleSuccessfulLogin("demo-admin-token", DEMO_ADMIN_EMAIL, true);
-      return;
-    }
-
     try {
-      // tentativa padrão (campo "senha")
       const res = await api.post("/login", { email, senha });
-      const token = res.data.token;
-      const userEmail = res.data.email ?? email;
-      const isAdmin = res.data.isAdmin ?? (userEmail === DEMO_ADMIN_EMAIL);
-      handleSuccessfulLogin(token, userEmail, !!isAdmin);
-      return;
+
+      handleSuccessfulLogin(
+        res.data.token,
+        res.data.email,
+        res.data.nome || "Usuário",
+        res.data.isAdmin
+      );
     } catch (err) {
-      // tenta payload com "password" se backend usar outra chave
-      try {
-        const res2 = await api.post("/login", { email, password: senha });
-        const token = res2.data.token;
-        const userEmail = res2.data.email ?? email;
-        const isAdmin = res2.data.isAdmin ?? (userEmail === DEMO_ADMIN_EMAIL);
-        handleSuccessfulLogin(token, userEmail, !!isAdmin);
-        return;
-      } catch (err2) {
-        console.error(err2);
-        alert(err2.response?.data?.error || err.response?.data?.error || "Erro ao fazer login!");
-      }
+      alert(err.response?.data?.error || "Erro ao fazer login!");
+
     }
   };
 
@@ -256,7 +217,7 @@ function Login() {
         >
           <AnimatedLogo src={logoParanoa} alt="Paranoá" />
           <h2 style={{ color: "#fafafa", fontWeight: 600, fontSize: "1.6rem" }}>
-            ARANOÁ
+            PARANOÁ
           </h2>
         </div>
 
@@ -281,11 +242,8 @@ function Login() {
         </form>
 
         <RegisterLink>
-          Não tem uma conta?{" "}
-          <a onClick={() => navigate("/")}>Registrar</a>
+          Não tem uma conta? <a onClick={() => navigate("/")}>Registrar</a>
         </RegisterLink>
-
-      
       </Card>
     </Container>
   );

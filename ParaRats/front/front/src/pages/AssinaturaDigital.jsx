@@ -7,8 +7,6 @@ import { jsPDF } from "jspdf";
 import api from "../api";
 import logoParanoa from "../assets/logo-light.svg";
 
-
-
 const Page = styled.div`
   width: 100%;
   display: flex;
@@ -21,8 +19,6 @@ const Page = styled.div`
     padding: 10px 0;
   }
 `;
-
-
 const ExportWrapper = styled.div`
   width: 100%;
   max-width: 1100px;
@@ -37,9 +33,6 @@ const ExportWrapper = styled.div`
     margin: 12px;
   }
 `;
-
-
-/* ====== CABEÇALHO ====== */
 const HeaderRow = styled.div`
   display: flex;
   gap: 16px;
@@ -53,9 +46,6 @@ const HeaderRow = styled.div`
     text-align: center;
   }
 `;
-
-
-
 const LogoBox = styled.div`
   width: 130px;
   height: 60px;
@@ -68,8 +58,6 @@ const LogoBox = styled.div`
   padding: 4px;
   overflow: hidden; /* impede a logo de sair */
 `;
-
-
 const LogoImg = styled.img`
   max-width: 100%;
   max-height: 100%;
@@ -77,9 +65,6 @@ const LogoImg = styled.img`
   display: block;
   image-rendering: -webkit-optimize-contrast;
 `;
-
-
-
 const HeaderInfo = styled.div`
   flex: 1;
   display: flex;
@@ -91,8 +76,6 @@ const HeaderInfo = styled.div`
     gap: 18px;
   }
 `;
-
-
 const UserInfo = styled.div`
   min-width: 220px;
   display: flex;
@@ -100,9 +83,6 @@ const UserInfo = styled.div`
   gap: 6px;
   align-items: flex-end;
 `;
-
-/* ... rest of styled components unchanged ... */
-
 const RevisionTable = styled.div`
   width: 100%;
   margin-top: 12px;
@@ -145,10 +125,6 @@ const RevisionTable = styled.div`
     }
   }
 `;
-
-
-
-
 const StyledInput = styled.input`
   width: 100%;
   padding: 10px 12px;
@@ -161,9 +137,6 @@ const StyledInput = styled.input`
     padding: 12px;
   }
 `;
-
-
-
 const StyledTextArea = styled.textarea`
   width: 100%;
   padding: 12px;
@@ -178,8 +151,6 @@ const StyledTextArea = styled.textarea`
     padding: 14px;
   }
 `;
-
-
 const SignaturesArea = styled.div`
   margin-top: 18px;
   display: grid;
@@ -190,8 +161,6 @@ const SignaturesArea = styled.div`
     grid-template-columns: 1fr;
   }
 `;
-
-
 const SigBlock = styled.div`
   border: 2px solid #1976d2;
   padding: 10px;
@@ -208,18 +177,12 @@ const SigBlock = styled.div`
     padding: 12px;
   }
 `;
-
-
-
-
-
 const SigHeader = styled.div`
   font-weight: 700;
   font-size: 0.85rem;
   margin-bottom: 6px;
   color: #0d47a1;
 `;
-
 const SigField = styled.div`
   font-size: 0.85rem;
   margin: 6px 0;
@@ -227,8 +190,6 @@ const SigField = styled.div`
   width: 100%;
   box-sizing: border-box;
 `;
-
-
 const SigLine = styled.div`
   height: 110px;
   border-top: 2px solid #1976d2;
@@ -244,9 +205,6 @@ const SigLine = styled.div`
     height: 100px;
   }
 `;
-
-
-
 const SigImg = styled.img`
   max-height: 90px;
   max-width: 100%;
@@ -254,7 +212,6 @@ const SigImg = styled.img`
   object-fit: contain;
   cursor: zoom-in;
 `;
-
 const Title = styled.h2`
   font-size: 1.4rem;
   font-weight: 700;
@@ -264,7 +221,6 @@ const Title = styled.h2`
   border-left: 4px solid #3b82f6;
   padding-left: 10px;
 `;
-
 const Card = styled.div`
   background: #ffffff;
   border-radius: 16px;
@@ -274,9 +230,6 @@ const Card = styled.div`
   box-shadow: 0 4px 16px rgba(0,0,0,0.05);
   margin-bottom: 28px;
 `;
-
-
-/* Área de botões */
 const Actions = styled.div`
   display: flex;
   flex-direction: column;
@@ -301,14 +254,11 @@ const Actions = styled.div`
     width: 95%;
   }
 `;
-
 const AdminBox = styled(Card)`
   display: flex;
   flex-direction: column;
   gap: 18px;
 `;
-
-
 const SelectStyled = styled.select`
   width: 100%;
   padding: 12px;
@@ -326,17 +276,14 @@ const SelectStyled = styled.select`
     outline: none;
   }
 `;
-
 const HistoryBox = styled(Card)`
   margin-top: 30px;
 `;
-
 const HistoryList = styled.div`
   max-height: 200px;
   overflow-y: auto;
   padding-right: 4px;
 `;
-
 const Section = styled.div`
   width: 100%;
   max-width: 760px;
@@ -344,8 +291,6 @@ const Section = styled.div`
   padding: 20px;
   margin-top: 40px;
 `;
-
-
 const Button = styled.button`
   background: ${(p) => p.bg || "#2563eb"};
   color: white;
@@ -371,12 +316,6 @@ const Button = styled.button`
     transform: translateY(0px);
   }
 `;
-
-
-
-
-
-
 const Footer = styled.footer`
   width: 100%;
   max-width: 1100px;
@@ -394,8 +333,6 @@ const Footer = styled.footer`
     font-size: 0.8rem;
   }
 `;
-
-
 const ZoomOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -405,7 +342,6 @@ const ZoomOverlay = styled.div`
   justify-content: center;
   z-index: 9999;
 `;
-
 const ZoomImage = styled.img`
   max-width: 92%;
   max-height: 86%;
@@ -413,19 +349,12 @@ const ZoomImage = styled.img`
   background: white;
   padding: 8px;
 `;
-
-/* ====== FUNÇÃO UTIL ====== */
 function today() {
   return new Date().toLocaleDateString();
 }
-
-/* ====== CONFIGURAÇÃO DE ADMIN (ajuste o email conforme necessário) ====== */
-const ADMIN_EMAIL = "admin@paranoa.com"; // altere para o e‑mail do administrador real
-
-/* ====== COMPONENTE PRINCIPAL ====== */
+const ADMIN_EMAIL = "admin@paranoa.com";
 export default function AssinaturaDigital() {
 
-  // 1. Estados SEM depender de currentUser:
   const [docNumber, setDocNumber] = useState("0");
   const [revisionDesc, setRevisionDesc] = useState("Elaboração Inicial");
   const [revisedBy, setRevisedBy] = useState("");
@@ -435,16 +364,13 @@ export default function AssinaturaDigital() {
     "Descrição breve do documento / alteração realizada..."
   );
 
-  // 2. loggedUser SEMPRE depois dos outros useState
   const [loggedUser, setLoggedUser] = useState(null);
 
-  // 3. Carregar usuário do localStorage
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setLoggedUser(JSON.parse(stored));
   }, []);
 
-  // 4. Corrigir exibição dos textos pré-preenchidos
   useEffect(() => {
     if (loggedUser?.isAdmin) {
       if (!title) setTitle("FGI 477 — Histórico de Revisão");
@@ -465,8 +391,7 @@ export default function AssinaturaDigital() {
   const [zoomed, setZoomed] = useState(null);
   const exportRef = useRef();
 
-  // --- Autenticação local (lê do localStorage setado pelo componente Login) ---
-  const [currentUser, setCurrentUser] = useState(null); // { email, isAdmin }
+  const [currentUser, setCurrentUser] = useState(null);
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
@@ -480,7 +405,6 @@ export default function AssinaturaDigital() {
       setCurrentUser(null);
     }
 
-    // carrega histórico (sempre disponível no localStorage, mas vamos exibir só para admin)
     try {
       const raw = localStorage.getItem("assinatura_history");
       if (raw) setHistory(JSON.parse(raw));
@@ -558,54 +482,133 @@ export default function AssinaturaDigital() {
     }
 
     const message =
-      `Olá! O documento *${filename}* foi gerado.\n\n` +
-      `📎 *O PDF já foi baixado automaticamente.*\n` +
-      `Agora clique no botão de anexar e envie o arquivo.`;
-
+      `O documento *${filename}* foi gerado.\n\n` +
+      `Verifique o arquivo *${filename}* abaixo.`;
 
     const encoded = encodeURIComponent(message);
     const url = `https://wa.me/${selectedNumber}?text=${encoded}`;
 
     window.open(url, "_blank");
   }
+async function handleExportPDF() {
+  if (!currentUser?.isAdmin) {
+    alert("Apenas administrador pode gerar PDF.");
+    return;
+  }
 
+  try {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const margin = 14;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    let y = margin;
+    const defaultLineHeight = 6;
+    const signatureHeight = 20;
+    const spacing = 10;
 
-  /* ====== GERAR PDF (APENAS ADMIN) ====== */
-  async function handleExportPDF() {
-    if (!currentUser?.isAdmin) {
-      alert("Apenas administrador pode gerar PDF.");
-      return;
-    }
+    // Adicionar logo
+    try {
+      const logoImg = await fetch(
+        "https://www.paranoa.com.br/images/logo/logo-light.svg"
+      ).then((r) => r.text());
+      pdf.addImage(logoImg, "SVG", margin, y, 32, 22);
+    } catch (e) {}
 
-    if (!exportRef.current) return;
+    // Título e número do documento
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14);
+    pdf.text(title || "Documento", margin + 40, y + 8);
 
-    // Esconde botões temporariamente
-    const buttons = document.querySelectorAll(".no-print");
-    buttons.forEach((btn) => (btn.style.display = "none"));
+    pdf.setFontSize(11);
+    pdf.text(`Nº: ${docNumber}`, margin + 40, y + 16);
+    y += 30;
 
-    const canvas = await html2canvas(exportRef.current, {
-      scale: 2,
-      backgroundColor: "#ffffff",
-      useCORS: true,
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(12);
+    pdf.text("Informações do Documento", margin, y);
+    y += 8;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11);
+
+    // Conteúdo textual com quebra automática de linha
+    const descriptionLines = pdf.splitTextToSize(`Descrição do Documento: ${description || "-"}`, pageWidth - 2*margin);
+    descriptionLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+    const revisionLines = pdf.splitTextToSize(`Descrição da Revisão: ${revisionDesc || "-"}`, pageWidth - 2*margin);
+    revisionLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+    const revisedByLines = pdf.splitTextToSize(`Revisado por: ${revisedBy || "-"}`, pageWidth - 2*margin);
+    revisedByLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+    const revisionDateLines = pdf.splitTextToSize(`Data da Revisão: ${revisionDate || "-"}`, pageWidth - 2*margin);
+    revisionDateLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+    y += 6;
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, y, pageWidth - margin, y);
+    y += 12;
+
+    // Seção de assinaturas
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.text("Assinaturas", margin, y);
+    y += 10;
+
+    // Preparar blocos com altura total para ajuste de fonte
+    let totalBlockHeight = 0;
+    const blocksInfo = blocks.map((blk) => {
+      const labelLines = pdf.splitTextToSize(blk.label, pageWidth - 2*margin);
+      const nameFuncLine = `Nome: ${blk.name || "-"}     Função: ${blk.func || "-"}`;
+      const nameFuncLines = pdf.splitTextToSize(nameFuncLine, pageWidth - 2*margin - 60);
+      const dateLines = pdf.splitTextToSize(`Data: ${blk.date || "-"}`, pageWidth - 2*margin);
+      const blockHeight = defaultLineHeight * (labelLines.length + nameFuncLines.length + dateLines.length) + signatureHeight + spacing*2;
+      totalBlockHeight += blockHeight;
+      return { blk, labelLines, nameFuncLines, dateLines, blockHeight };
     });
 
-    // Restaura botões
-    buttons.forEach((btn) => (btn.style.display = ""));
+    // Calcular espaço disponível e escalar fonte se houver sobra
+    const availableHeight = pageHeight - margin - y;
+    let scale = 1;
+    if (totalBlockHeight < availableHeight) {
+      scale = availableHeight / totalBlockHeight;
+    }
+    const lineHeight = defaultLineHeight * scale;
+    pdf.setFontSize(11 * scale);
 
-    const image = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgProps = pdf.getImageProperties(image);
-    const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
-    pdf.addImage(image, "PNG", 0, 0, pageWidth, imgHeight);
+    blocksInfo.forEach(({ blk, labelLines, nameFuncLines, dateLines }) => {
+      // Label
+      pdf.setFont("helvetica", "bold");
+      labelLines.forEach(line => { pdf.text(line, margin, y); y += lineHeight; });
 
-    const filename = `historico_revisao_${new Date()
-      .toISOString()
-      .split("T")[0]}.pdf`;
+      // Nome + Função + Assinatura
+      pdf.setFont("helvetica", "normal");
+      nameFuncLines.forEach(line => {
+        pdf.text(line, margin, y);
+        if (blk.signature) {
+          pdf.addImage(blk.signature, "PNG", pageWidth - margin - 60, y - 2, 60, signatureHeight * scale);
+        }
+        y += lineHeight;
+      });
 
+      // Data
+      dateLines.forEach(line => { pdf.text(line, margin, y); y += lineHeight; });
+
+      // Linha separadora
+      pdf.setLineWidth(0.2);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += spacing * scale;
+    });
+
+    // Salvar arquivo
+    const filename = `historico_revisao_${new Date().toISOString().split("T")[0]}.pdf`;
     pdf.save(filename);
 
-    // salvar entrada no histórico (não armazenamos imagens)
+    // Salvar histórico
     const entry = {
       id: Date.now(),
       date: new Date().toISOString(),
@@ -616,7 +619,7 @@ export default function AssinaturaDigital() {
       revisedBy,
       revisionDate,
       exportedBy: currentUser?.email || "unknown",
-      blocks: blocks.map((b) => ({
+      blocks: blocks.map(b => ({
         key: b.key,
         name: b.name,
         func: b.func,
@@ -628,9 +631,15 @@ export default function AssinaturaDigital() {
     const next = [entry, ...history].slice(0, 200);
     persistHistory(next);
 
-    // ➤ Envia para WhatsApp
+    // Enviar WhatsApp
     enviarWhatsApp(filename);
+
+  } catch (err) {
+    console.error("Erro ao gerar PDF:", err);
+    alert("Erro ao gerar PDF.");
   }
+}
+
 
 
   function clearHistory() {
@@ -684,44 +693,39 @@ export default function AssinaturaDigital() {
     }
   };
 
-  useEffect(() => {
-    async function loadDoc() {
-      try {
-        const res = await fetch(`http://localhost:4000/assinaturas/doc`);
-        const data = await res.json();
+useEffect(() => {
+  async function loadDoc() {
+    try {
+      const res = await fetch(`http://localhost:4000/assinaturas/doc`);
+      const data = await res.json();
 
-        if (!data.blocks) return;
+      if (!data.blocks) return;
 
-        setBlocks(
-          data.blocks.map((b, i) => ({
-            name: b.name || "",
-            func:
-              b.func ||
-              (i === 0 ? "Qualidade" :
-                i === 1 ? "Manufatura" :
-                  i === 2 ? "Manutenção" :
-                    i === 3 ? "Engenharia" :
-                      ""),
-            date: b.date || "",
-            signature: b.signature || "",
-            locked: b.locked ?? false,
-          }))
-        );
+      setBlocks(
+        data.blocks.map((b, i) => ({
+          name: b.name || "",
+          func: b.func || (i === 0 ? "Qualidade" : i === 1 ? "Manufatura" : i === 2 ? "Manutenção" : i === 3 ? "Engenharia" : ""),
+          date: b.date || "", 
+          signature: b.signature || "",
+          locked: b.locked ?? false,
+        }))
+      );
 
-        // carrega também título, descrição, revisão etc.
-        setTitle(data.title || "");
-        setDocNumber(data.docNumber || "");
-        setRevisionDesc(data.revisionDesc || "");
-        setRevisedBy(data.revisedBy || "");
-        setRevisionDate(data.revisionDate || "");
-        setDescription(data.description || "");
-      } catch (err) {
-        console.error("Erro ao carregar documento:", err);
-      }
+      // Carregar outros campos, usando fallback para data atual
+      setTitle(data.title || "");
+      setDocNumber(data.docNumber || "");
+      setRevisionDesc(data.revisionDesc || "");
+      setRevisedBy(data.revisedBy || "");
+      setRevisionDate(data.revisionDate || today()); // <-- aqui
+      setDescription(data.description || "");
+    } catch (err) {
+      console.error("Erro ao carregar documento:", err);
     }
+  }
 
-    loadDoc();
-  }, []);
+  loadDoc();
+}, []);
+
 
   async function handleReset() {
     if (!currentUser?.isAdmin) {
@@ -884,17 +888,11 @@ export default function AssinaturaDigital() {
         return updated;
       });
 
-      // ❌ REMOVIDO - função inexistente que gerava erro
-      // fetchDocument();
-
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar alteração");
     }
   };
-
-
-
 
   const markEdited = (index) => {
     setBlocks(prev => {
@@ -1658,4 +1656,3 @@ export default function AssinaturaDigital() {
     </Page>
   );
 }
-// ...existing code...

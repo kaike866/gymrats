@@ -5,6 +5,8 @@ import Signature from "@lemonadejs/signature/dist/react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import api from "../api";
+import logoParanoa from "../assets/logo-light.svg";
+
 
 
 const Page = styled.div`
@@ -42,39 +44,54 @@ const HeaderRow = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 
   @media (max-width: 768px) {
     flex-direction: column;
+    align-items: center;
+    gap: 12px;
     text-align: center;
   }
 `;
 
 
+
 const LogoBox = styled.div`
-  width: 110px;
-  height: 70px;
+  width: 130px;
+  height: 60px;
   background: white;
   border: 2px solid #1976d2;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  padding: 6px;
+  padding: 4px;
+  overflow: hidden; /* impede a logo de sair */
 `;
 
+
 const LogoImg = styled.img`
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
 `;
+
+
 
 const HeaderInfo = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 14px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 18px;
+  }
 `;
+
 
 const UserInfo = styled.div`
   min-width: 220px;
@@ -88,63 +105,80 @@ const UserInfo = styled.div`
 
 const RevisionTable = styled.div`
   width: 100%;
-  margin-top: 6px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: 1fr 2fr 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
 
   & > div {
-    padding: 6px 8px;
+    padding: 8px 10px;
     border: 1px solid #1976d2;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     background: #f9fbff;
+    border-radius: 6px;
   }
 
+  /* MOBILE — vira cards visualmente perfeitos */
   @media (max-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 
     & > div {
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      font-size: 1rem;
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #b3d1f7;
+    }
+
+    /* Remove layout de "colunas" no mobile */
+    & > div:nth-child(1),
+    & > div:nth-child(2),
+    & > div:nth-child(3),
+    & > div:nth-child(4) {
+      font-weight: 700;
+      font-size: 1.05rem;
+      background: #e9f2ff;
     }
   }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 
-const Title = styled.h1`
-  margin: 8px 0 6px;
-  font-size: 1.05rem;
-  color: #0d47a1;
-`;
+
 
 const StyledInput = styled.input`
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid #1976d2;
   border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: 1rem;
 
   @media (max-width: 768px) {
-    font-size: 0.9rem;
+    font-size: 1.05rem;
+    padding: 12px;
   }
 `;
+
 
 
 const StyledTextArea = styled.textarea`
   width: 100%;
-  padding: 8px 10px;
+  padding: 12px;
   border: 1px solid #1976d2;
   border-radius: 6px;
-  font-size: 0.95rem;
-  min-height: 76px;
+  font-size: 1rem;
+  min-height: 90px;
   resize: vertical;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+
+  @media (max-width: 768px) {
+    font-size: 1.05rem;
+    padding: 14px;
+  }
 `;
+
 
 const SignaturesArea = styled.div`
   margin-top: 18px;
@@ -221,75 +255,126 @@ const SigImg = styled.img`
   cursor: zoom-in;
 `;
 
+const Title = styled.h2`
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 16px;
 
+  border-left: 4px solid #3b82f6;
+  padding-left: 10px;
+`;
+
+const Card = styled.div`
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  margin-bottom: 28px;
+`;
+
+
+/* Área de botões */
 const Actions = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 22px;
 
   width: 100%;
-  max-width: 420px;   /* >>> bloco fica com largura ideal no desktop */
-  margin: 36px auto;  /* >>> centralizado com espaço */
-  padding: 20px;      /* >>> espaço interno */
-  background: #fff;
-  border-radius: 10px;
-  border: 1px solid #e5e5e5;
+  max-width: 520px;
+  margin: 45px auto;
+
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+
+  padding: 28px;
+  border-radius: 18px;
+
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
 
   @media (max-width: 768px) {
-    max-width: 100%;  /* >>> ocupa toda a tela no mobile */
-    padding-inline: 16px;
-    margin-top: 28px;
+    padding: 20px;
+    width: 95%;
   }
 `;
 
-const AdminBox = styled.div`
-  margin-top: 10px;
-  padding: 12px;
-  background: #f7f7f7;
-  border-radius: 12px;
+const AdminBox = styled(Card)`
   display: flex;
   flex-direction: column;
-  gap: 14px;
-
-  @media (max-width: 768px) {
-    padding: 14px;
-  }
+  gap: 18px;
 `;
+
 
 const SelectStyled = styled.select`
   width: 100%;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #ccc;
+
+  border: 1px solid #cbd5e1;
   font-size: 15px;
 
+  background: #fff;
+  transition: 0.2s ease;
+
   &:focus {
-    outline: none;
     border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    outline: none;
   }
 `;
 
+const HistoryBox = styled(Card)`
+  margin-top: 30px;
+`;
+
+const HistoryList = styled.div`
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+`;
+
+const Section = styled.div`
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px;
+  margin-top: 40px;
+`;
 
 
 const Button = styled.button`
-  background: ${(p) => p.bg || "#2196f3"};
+  background: ${(p) => p.bg || "#2563eb"};
   color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
-  font-size: 1rem;
-  width: 100%;              /* >>> Botões agora sempre tem o mesmo tamanho */
-  max-width: 320px;         /* >>> No desktop, não ficam enormes */
+  font-size: 0.95rem;
 
-  transition: 0.2s;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+
+  width: 100%;
+  max-width: 260px;
+
+  transition: 0.2s ease;
 
   &:hover {
-    opacity: 0.9;
+    opacity: 0.95;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0px);
   }
 `;
+
+
+
+
 
 
 const Footer = styled.footer`
@@ -825,9 +910,7 @@ export default function AssinaturaDigital() {
       <ExportWrapper ref={exportRef}>
         <HeaderRow>
           <LogoBox>
-            <LogoImg
-              src="https://www.paranoa.com.br/images/logo/logo-light.svg"
-              alt="Logo Paranoá"
+            <LogoImg src={logoParanoa} alt="Logo Paranoá"
             />
           </LogoBox>
 
@@ -1231,208 +1314,330 @@ export default function AssinaturaDigital() {
       </ExportWrapper>
 
 
+      {/* Container geral do painel */}
+      <Section>
 
-      {/* Histórico visível apenas para admin */}
-      {currentUser?.isAdmin && (
-        <div style={{ marginTop: 18 }}>
-          <Title>Histórico de Geração</Title>
-          <div style={{ marginTop: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: 14, color: "#333" }}>{history.length} registros</div>
-              <div>
-                <Button bg="#f44336" onClick={clearHistory}>Limpar Histórico</Button>
+        {/* Histórico visível apenas para admin */}
+        {currentUser?.isAdmin && (
+          <HistoryBox>
+            <Title>Histórico de Geração</Title>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 14, color: "#475569" }}>
+                {history.length} registros
               </div>
+
+              <Button bg="#c0392b" onClick={clearHistory}>
+                Limpar Histórico
+              </Button>
             </div>
 
-            <div style={{ marginTop: 10, maxHeight: 220, overflow: "auto", border: "1px solid #eee", padding: 8, borderRadius: 6, background: "#fafafa" }}>
+            <HistoryList>
               {history.length === 0 ? (
-                <div style={{ color: "#666" }}>Sem registros.</div>
+                <div style={{ color: "#64748b" }}>Sem registros.</div>
               ) : (
                 history.map((h) => (
-                  <div key={h.id} style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>{h.filename}</div>
-                    <div style={{ fontSize: 12, color: "#555" }}>{new Date(h.date).toLocaleString()} — por {h.exportedBy}</div>
-                    <div style={{ fontSize: 12, color: "#333", marginTop: 6 }}>
+                  <div key={h.id} style={{ padding: "10px 4px", borderBottom: "1px solid #e2e8f0" }}>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{h.filename}</div>
+                    <div style={{ fontSize: 12, color: "#475569" }}>
+                      {new Date(h.date).toLocaleString()} — por {h.exportedBy}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#334155", marginTop: 6 }}>
                       Doc: {h.docNumber} — {h.title}
                     </div>
                   </div>
                 ))
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* Botões fora do export */}
-      <Actions className="no-print">
-
-        {/* Área ADMIN — enviar e gerar PDF */}
-        {currentUser?.isAdmin && (
-          <AdminBox>
-            <label style={{ fontWeight: 600 }}>Enviar para:</label>
-
-            <SelectStyled
-              value={selectedNumber}
-              onChange={(e) => setSelectedNumber(e.target.value)}
-            >
-              <option value="">Selecione um número...</option>
-              {phoneList.map((p, index) => (
-                <option key={index} value={p.number}>
-                  {p.name} — {p.number}
-                </option>
-              ))}
-            </SelectStyled>
-
-            <Button
-              bg="#25D366"
-              onClick={async () => {
-                await handleExportPDF();
-                enviarWhatsApp();
-              }}
-            >
-              📄 Gerar PDF e Enviar
-            </Button>
-          </AdminBox>
+            </HistoryList>
+          </HistoryBox>
         )}
 
-        {/* Botão PDF somente admin */}
-        {!currentUser?.isAdmin && (
-          <Button
-            bg="#999"
-            onClick={() => alert("Apenas administrador pode gerar PDF.")}
-          >
-            📄 Gerar PDF (somente admin)
-          </Button>
-        )}
 
-        {/* Botão Resetar */}
-        {currentUser?.isAdmin ? (
-          <Button onClick={handleReset}>
-            Resetar
-          </Button>
-        ) : (
-          <Button
-            bg="#999"
-            onClick={() => alert("Apenas administrador pode Resetar.")}
-          >
-            Resetar (somente admin)
-          </Button>
-        )}
 
-      </Actions>
+        {/* Área de Ações */}
+        <Actions className="no-print">
+
+          {/* ADMIN — Gerar PDF + enviar */}
+          {currentUser?.isAdmin && (
+            <AdminBox>
+              <label style={{ fontWeight: 600, fontSize: 14, color: "#374151" }}>
+                Enviar para:
+              </label>
+
+              <SelectStyled
+                value={selectedNumber}
+                onChange={(e) => setSelectedNumber(e.target.value)}
+              >
+                <option value="">Selecione um número...</option>
+                {phoneList.map((p, index) => (
+                  <option key={index} value={p.number}>
+                    {p.name} — {p.number}
+                  </option>
+                ))}
+              </SelectStyled>
+
+              <Button
+                bg="#0d6efd"
+                onClick={async () => {
+                  await handleExportPDF();
+                  enviarWhatsApp();
+                }}
+              >
+                📄 Gerar PDF e Enviar
+              </Button>
+            </AdminBox>
+          )}
+
+          {/* Botão PDF somente admin */}
+          {!currentUser?.isAdmin && (
+            <Card>
+              <Button
+                bg="#999"
+                onClick={() => alert("Apenas administrador pode gerar PDF.")}
+              >
+                📄 Gerar PDF (somente admin)
+              </Button>
+            </Card>
+          )}
+
+          {/* Reset */}
+          <Card>
+            {currentUser?.isAdmin ? (
+              <Button onClick={handleReset}>Resetar</Button>
+            ) : (
+              <Button
+                bg="#999"
+                onClick={() => alert("Apenas administrador pode Resetar.")}
+              >
+                Resetar (somente admin)
+              </Button>
+            )}
+          </Card>
+
+        </Actions>
+      </Section>
+
 
 
 
 
       {currentUser?.isAdmin && (
         <div style={{ marginTop: 28 }}>
-          <Title>Usuários Registrados</Title>
+          <Title
+            style={{
+              fontSize: 22,
+              fontWeight: 800,
+              color: "#1e293b",
+              marginBottom: 24,
+              position: "relative",
+              paddingBottom: 8,
+            }}
+          >
+            Usuários Registrados
 
-          <div>
+            <span
+              style={{
+                position: "absolute",
+                width: "70px",
+                height: "4px",
+                background: "#1976d2",
+                bottom: 0,
+                left: 0,
+                borderRadius: 8,
+                opacity: 0.9,
+              }}
+            ></span>
+          </Title>
 
-            {/* BOTÃO PARA CARREGAR USUÁRIOS */}
-            {!usersLoaded && (
-              <Button
-                onClick={loadUsers}
-                bg="#1976d2"
-                style={{ marginBottom: 10 }}
-              >
-                Carregar usuários
-              </Button>
-            )}
 
-            {/* NENHUM USUÁRIO */}
-            {usersLoaded && users.length === 0 && (
-              <div style={{ color: "#666", marginTop: 10 }}>
-                Nenhum usuário cadastrado.
-              </div>
-            )}
 
-            {/* LISTA DE USUÁRIOS */}
-            {usersLoaded && users.length > 0 && (
-              <div
-                style={{
-                  marginTop: 10,
-                  border: "1px solid #eee",
-                  padding: 12,
-                  borderRadius: 6,
-                  maxHeight: 260,
-                  overflow: "auto",
-                  background: "#fafafa",
-                }}
-              >
-                {users.map((u) => (
+
+          {/* Botão carregar */}
+          {!usersLoaded && (
+            <Button
+              onClick={loadUsers}
+              bg="#1976d2"
+              style={{
+                marginBottom: 18,
+                padding: "10px 22px",
+                fontWeight: 600,
+                borderRadius: 10,
+                fontSize: 15,
+              }}
+            >
+              Carregar usuários
+            </Button>
+
+          )}
+
+          {/* Sem usuários */}
+          {usersLoaded && users.length === 0 && (
+            <div style={{ color: "#777", marginTop: 10, fontStyle: "italic" }}>
+              Nenhum usuário cadastrado.
+            </div>
+          )}
+
+          {/* Lista */}
+          {usersLoaded && users.length > 0 && (
+            <div
+              style={{
+                marginTop: 15,
+                padding: 18,
+                borderRadius: 14,
+                maxHeight: 320,
+                overflowY: "auto",
+                background: "#ffffff",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              }}
+            >
+              {users.map((u) => (
+                <div
+                  key={u._id}
+                  style={{
+                    padding: 18,
+                    marginBottom: 14,
+                    background: "#f8fafc",
+                    borderRadius: 14,
+                    border: "1px solid #d0d7e2",
+                    transition: "0.25s ease",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                  }}
+                  onMouseEnter={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    "0 6px 16px rgba(0,0,0,0.10)")
+                  }
+                  onMouseLeave={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    "0 2px 6px rgba(0,0,0,0.05)")
+                  }
+                >
+
+                  {/* Nome + email */}
                   <div
-                    key={u._id}
                     style={{
-                      padding: 12,
-                      borderBottom: "1px solid #ddd",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
+                      fontWeight: 700,
+                      fontSize: 17,
+                      color: "#0f172a",
+                      marginBottom: 12,
                     }}
                   >
-                    <div style={{ fontWeight: 700 }}>
-                      {u.nome} — {u.email}
-                    </div>
-
-                    {/* CAMPOS EDITÁVEIS */}
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <input
-                        type="text"
-                        placeholder="Nome"
-                        value={u.nome}
-                        onChange={(e) =>
-                          updateUserField(u._id, "nome", e.target.value)
-                        }
-                        style={{ flex: 1, padding: 6 }}
-                      />
-
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        value={u.email}
-                        onChange={(e) =>
-                          updateUserField(u._id, "email", e.target.value)
-                        }
-                        style={{ flex: 1, padding: 6 }}
-                      />
-
-                      <input
-                        type="password"
-                        placeholder="Nova senha (opcional)"
-                        value={u.senhaTemp || ""}
-                        onChange={(e) =>
-                          updateUserField(u._id, "senhaTemp", e.target.value)
-                        }
-                        style={{ width: 160, padding: 6 }}
-                      />
-                    </div>
-
-                    <div style={{ display: "flex", gap: 10 }}>
-                      {/* SALVAR */}
-                      <Button bg="#4caf50" onClick={() => saveUser(u._id)}>
-                        Salvar
-                      </Button>
-
-                      {/* EXCLUIR (não pode excluir ele mesmo) */}
-                      <Button
-                        bg="#f44336"
-                        disabled={!currentUser?.isAdmin || u.email === currentUser.email}
-                        onClick={() => deleteUser(u._id)}
-                      >
-                        Excluir
-                      </Button>
-
-                    </div>
+                    {u.nome} —{" "}
+                    <span style={{ fontWeight: 400, color: "#475569" }}>
+                      {u.email}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+
+
+                  {/* Inputs: mobile friendly */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 10,
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Nome"
+                      value={u.nome}
+                      onChange={(e) => updateUserField(u._id, "nome", e.target.value)}
+                      style={{
+                        flex: "1 1 160px",
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #cbd5e1",
+                        background: "#fff",
+                        fontSize: 14,
+                        transition: "0.2s",
+                      }}
+                    />
+
+
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={u.email}
+                      onChange={(e) =>
+                        updateUserField(u._id, "email", e.target.value)
+                      }
+                      style={{
+                        flex: "1 1 180px",
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #cbd5e1",
+                        background: "#fff",
+                        fontSize: 14,
+                        transition: "0.2s",
+                      }}
+
+                    />
+
+                    <input
+                      type="password"
+                      placeholder="Nova senha"
+                      value={u.senhaTemp || ""}
+                      onChange={(e) =>
+                        updateUserField(u._id, "senhaTemp", e.target.value)
+                      }
+                      style={{
+                        flex: "1 1 180px",
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #cbd5e1",
+                        background: "#fff",
+                        fontSize: 14,
+                        transition: "0.2s",
+                      }}
+
+                    />
+                  </div>
+
+                  {/* Botões */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 10,
+                      marginTop: 12,
+                    }}
+                  >
+                    <Button
+                      bg="#1759bdff"
+                      onClick={() => saveUser(u._id)}
+                      style={{
+                        padding: "9px 16px",
+                        fontWeight: 600,
+                        borderRadius: 10,
+                        fontSize: 14,
+                      }}
+                    >
+                      Salvar
+                    </Button>
+
+                    <Button
+                      bg="#f44336"
+                      disabled={!currentUser?.isAdmin || u.email === currentUser.email}
+                      onClick={() => deleteUser(u._id)}
+                      style={{
+                        padding: "9px 16px",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        opacity:
+                          !currentUser?.isAdmin || u.email === currentUser.email ? 0.5 : 1,
+                      }}
+                    >
+                      Excluir
+                    </Button>
+
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
+
 
 
 
@@ -1441,7 +1646,7 @@ export default function AssinaturaDigital() {
       <Footer>
         <div>FGI 477 rev.03</div>
         <div style={{ color: "#999", fontSize: 12 }}>
-          ©️ 2025 - Assinatura Digital Kaike
+          ©️ 2025 - Assinatura Digital Kaike e Gabriel Alencar
         </div>
       </Footer>
 

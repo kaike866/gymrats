@@ -44,6 +44,38 @@ router.put("/block/:index", authAdmin, async (req, res) => {
   }
 });
 
+router.post("/block/:index", async (req, res) => {
+  try {
+    const { index } = req.params;
+    const { name, func, date, signature } = req.body;
+
+    let doc = await Assinatura.findOne({ documentName: DOC_NAME });
+    if (!doc) return res.status(404).json({ error: "Documento não encontrado" });
+
+    if (!doc.blocks[index]) {
+      return res.status(400).json({ error: "Bloco inválido." });
+    }
+
+    // Atualiza bloco com a assinatura do usuário
+    doc.blocks[index] = {
+      ...doc.blocks[index],
+      name,
+      func,
+      date,
+      signature,
+      locked: true, // usuário normal trava o bloco
+    };
+
+    await doc.save();
+
+    res.json({ message: "Bloco assinado!", doc });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao assinar bloco." });
+  }
+});
+
+
 
 // 🔹 CARREGAR DOCUMENTO --------------------------------------------
 router.get("/doc", async (req, res) => {

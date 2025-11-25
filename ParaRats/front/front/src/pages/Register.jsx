@@ -3,6 +3,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import logoParanoa from "../assets/paranoalogosemfundo.png";
+import { Eye, EyeOff } from "lucide-react";
 
 const Container = styled.div`
   position: relative;
@@ -130,6 +131,8 @@ function Register() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
   const navigate = useNavigate();
   const canvasRef = useRef(null);
 
@@ -224,12 +227,14 @@ function Register() {
         <Subtitle>Crie sua conta para acessar o DataDriven</Subtitle>
 
         <form onSubmit={handleRegister}>
+
           <Input
             placeholder="Nome completo"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             required
           />
+
           <Input
             type="email"
             placeholder="E-mail corporativo"
@@ -237,18 +242,38 @@ function Register() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <Input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
+
+          {/* Campo de senha com olhinho */}
+          <div style={{ position: "relative", width: "100%" }}>
+            <Input
+              type={mostrarSenha ? "text" : "password"}
+              placeholder="Senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+            />
+
+            <div
+              onClick={() => setMostrarSenha(!mostrarSenha)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "45%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#bfbfbf",
+              }}
+            >
+              {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
+            </div>
+          </div>
+
           <Button type="submit">Registrar</Button>
         </form>
 
         <RegisterLink>
-          Já tem uma conta? <a onClick={() => navigate("/login")}>Fazer login</a>
+          Já tem uma conta?{" "}
+          <a onClick={() => navigate("/login")}>Fazer login</a>
         </RegisterLink>
       </Card>
     </Container>

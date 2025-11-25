@@ -490,155 +490,155 @@ export default function AssinaturaDigital() {
 
     window.open(url, "_blank");
   }
-async function handleExportPDF() {
-  if (!currentUser?.isAdmin) {
-    alert("Apenas administrador pode gerar PDF.");
-    return;
-  }
-
-  try {
-    const pdf = new jsPDF("p", "mm", "a4");
-    const margin = 14;
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    let y = margin;
-    const defaultLineHeight = 6;
-    const signatureHeight = 20;
-    const spacing = 10;
-
-    // Adicionar logo
-    try {
-      const logoImg = await fetch(
-        "https://www.paranoa.com.br/images/logo/logo-light.svg"
-      ).then((r) => r.text());
-      pdf.addImage(logoImg, "SVG", margin, y, 32, 22);
-    } catch (e) {}
-
-    // Título e número do documento
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(14);
-    pdf.text(title || "Documento", margin + 40, y + 8);
-
-    pdf.setFontSize(11);
-    pdf.text(`Nº: ${docNumber}`, margin + 40, y + 16);
-    y += 30;
-
-    pdf.setLineWidth(0.3);
-    pdf.line(margin, y, pageWidth - margin, y);
-    y += 10;
-
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(12);
-    pdf.text("Informações do Documento", margin, y);
-    y += 8;
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(11);
-
-    // Conteúdo textual com quebra automática de linha
-    const descriptionLines = pdf.splitTextToSize(`Descrição do Documento: ${description || "-"}`, pageWidth - 2*margin);
-    descriptionLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
-
-    const revisionLines = pdf.splitTextToSize(`Descrição da Revisão: ${revisionDesc || "-"}`, pageWidth - 2*margin);
-    revisionLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
-
-    const revisedByLines = pdf.splitTextToSize(`Revisado por: ${revisedBy || "-"}`, pageWidth - 2*margin);
-    revisedByLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
-
-    const revisionDateLines = pdf.splitTextToSize(`Data da Revisão: ${revisionDate || "-"}`, pageWidth - 2*margin);
-    revisionDateLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
-
-    y += 6;
-    pdf.setLineWidth(0.3);
-    pdf.line(margin, y, pageWidth - margin, y);
-    y += 12;
-
-    // Seção de assinaturas
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(13);
-    pdf.text("Assinaturas", margin, y);
-    y += 10;
-
-    // Preparar blocos com altura total para ajuste de fonte
-    let totalBlockHeight = 0;
-    const blocksInfo = blocks.map((blk) => {
-      const labelLines = pdf.splitTextToSize(blk.label, pageWidth - 2*margin);
-      const nameFuncLine = `Nome: ${blk.name || "-"}     Função: ${blk.func || "-"}`;
-      const nameFuncLines = pdf.splitTextToSize(nameFuncLine, pageWidth - 2*margin - 60);
-      const dateLines = pdf.splitTextToSize(`Data: ${blk.date || "-"}`, pageWidth - 2*margin);
-      const blockHeight = defaultLineHeight * (labelLines.length + nameFuncLines.length + dateLines.length) + signatureHeight + spacing*2;
-      totalBlockHeight += blockHeight;
-      return { blk, labelLines, nameFuncLines, dateLines, blockHeight };
-    });
-
-    // Calcular espaço disponível e escalar fonte se houver sobra
-    const availableHeight = pageHeight - margin - y;
-    let scale = 1;
-    if (totalBlockHeight < availableHeight) {
-      scale = availableHeight / totalBlockHeight;
+  async function handleExportPDF() {
+    if (!currentUser?.isAdmin) {
+      alert("Apenas administrador pode gerar PDF.");
+      return;
     }
-    const lineHeight = defaultLineHeight * scale;
-    pdf.setFontSize(11 * scale);
 
-    blocksInfo.forEach(({ blk, labelLines, nameFuncLines, dateLines }) => {
-      // Label
+    try {
+      const pdf = new jsPDF("p", "mm", "a4");
+      const margin = 14;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let y = margin;
+      const defaultLineHeight = 6;
+      const signatureHeight = 20;
+      const spacing = 10;
+
+      // Adicionar logo
+      try {
+        const logoImg = await fetch(
+          "https://www.paranoa.com.br/images/logo/logo-light.svg"
+        ).then((r) => r.text());
+        pdf.addImage(logoImg, "SVG", margin, y, 32, 22);
+      } catch (e) { }
+
+      // Título e número do documento
       pdf.setFont("helvetica", "bold");
-      labelLines.forEach(line => { pdf.text(line, margin, y); y += lineHeight; });
+      pdf.setFontSize(14);
+      pdf.text(title || "Documento", margin + 40, y + 8);
 
-      // Nome + Função + Assinatura
+      pdf.setFontSize(11);
+      pdf.text(`Nº: ${docNumber}`, margin + 40, y + 16);
+      y += 30;
+
+      pdf.setLineWidth(0.3);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 10;
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.text("Informações do Documento", margin, y);
+      y += 8;
+
       pdf.setFont("helvetica", "normal");
-      nameFuncLines.forEach(line => {
-        pdf.text(line, margin, y);
-        if (blk.signature) {
-          pdf.addImage(blk.signature, "PNG", pageWidth - margin - 60, y - 2, 60, signatureHeight * scale);
-        }
-        y += lineHeight;
+      pdf.setFontSize(11);
+
+      // Conteúdo textual com quebra automática de linha
+      const descriptionLines = pdf.splitTextToSize(`Descrição do Documento: ${description || "-"}`, pageWidth - 2 * margin);
+      descriptionLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+      const revisionLines = pdf.splitTextToSize(`Descrição da Revisão: ${revisionDesc || "-"}`, pageWidth - 2 * margin);
+      revisionLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+      const revisedByLines = pdf.splitTextToSize(`Revisado por: ${revisedBy || "-"}`, pageWidth - 2 * margin);
+      revisedByLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+      const revisionDateLines = pdf.splitTextToSize(`Data da Revisão: ${revisionDate || "-"}`, pageWidth - 2 * margin);
+      revisionDateLines.forEach(line => { pdf.text(line, margin, y); y += defaultLineHeight; });
+
+      y += 6;
+      pdf.setLineWidth(0.3);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 12;
+
+      // Seção de assinaturas
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(13);
+      pdf.text("Assinaturas", margin, y);
+      y += 10;
+
+      // Preparar blocos com altura total para ajuste de fonte
+      let totalBlockHeight = 0;
+      const blocksInfo = blocks.map((blk) => {
+        const labelLines = pdf.splitTextToSize(blk.label, pageWidth - 2 * margin);
+        const nameFuncLine = `Nome: ${blk.name || "-"}     Função: ${blk.func || "-"}`;
+        const nameFuncLines = pdf.splitTextToSize(nameFuncLine, pageWidth - 2 * margin - 60);
+        const dateLines = pdf.splitTextToSize(`Data: ${blk.date || "-"}`, pageWidth - 2 * margin);
+        const blockHeight = defaultLineHeight * (labelLines.length + nameFuncLines.length + dateLines.length) + signatureHeight + spacing * 2;
+        totalBlockHeight += blockHeight;
+        return { blk, labelLines, nameFuncLines, dateLines, blockHeight };
       });
 
-      // Data
-      dateLines.forEach(line => { pdf.text(line, margin, y); y += lineHeight; });
+      // Calcular espaço disponível e escalar fonte se houver sobra
+      const availableHeight = pageHeight - margin - y;
+      let scale = 1;
+      if (totalBlockHeight < availableHeight) {
+        scale = availableHeight / totalBlockHeight;
+      }
+      const lineHeight = defaultLineHeight * scale;
+      pdf.setFontSize(11 * scale);
 
-      // Linha separadora
-      pdf.setLineWidth(0.2);
-      pdf.line(margin, y, pageWidth - margin, y);
-      y += spacing * scale;
-    });
+      blocksInfo.forEach(({ blk, labelLines, nameFuncLines, dateLines }) => {
+        // Label
+        pdf.setFont("helvetica", "bold");
+        labelLines.forEach(line => { pdf.text(line, margin, y); y += lineHeight; });
 
-    // Salvar arquivo
-    const filename = `historico_revisao_${new Date().toISOString().split("T")[0]}.pdf`;
-    pdf.save(filename);
+        // Nome + Função + Assinatura
+        pdf.setFont("helvetica", "normal");
+        nameFuncLines.forEach(line => {
+          pdf.text(line, margin, y);
+          if (blk.signature) {
+            pdf.addImage(blk.signature, "PNG", pageWidth - margin - 60, y - 2, 60, signatureHeight * scale);
+          }
+          y += lineHeight;
+        });
 
-    // Salvar histórico
-    const entry = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      filename,
-      title,
-      docNumber,
-      revisionDesc,
-      revisedBy,
-      revisionDate,
-      exportedBy: currentUser?.email || "unknown",
-      blocks: blocks.map(b => ({
-        key: b.key,
-        name: b.name,
-        func: b.func,
-        date: b.date,
-        hasSignature: !!b.signature,
-      })),
-    };
+        // Data
+        dateLines.forEach(line => { pdf.text(line, margin, y); y += lineHeight; });
 
-    const next = [entry, ...history].slice(0, 200);
-    persistHistory(next);
+        // Linha separadora
+        pdf.setLineWidth(0.2);
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += spacing * scale;
+      });
 
-    // Enviar WhatsApp
-    enviarWhatsApp(filename);
+      // Salvar arquivo
+      const filename = `historico_revisao_${new Date().toISOString().split("T")[0]}.pdf`;
+      pdf.save(filename);
 
-  } catch (err) {
-    console.error("Erro ao gerar PDF:", err);
-    alert("Erro ao gerar PDF.");
+      // Salvar histórico
+      const entry = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        filename,
+        title,
+        docNumber,
+        revisionDesc,
+        revisedBy,
+        revisionDate,
+        exportedBy: currentUser?.email || "unknown",
+        blocks: blocks.map(b => ({
+          key: b.key,
+          name: b.name,
+          func: b.func,
+          date: b.date,
+          hasSignature: !!b.signature,
+        })),
+      };
+
+      const next = [entry, ...history].slice(0, 200);
+      persistHistory(next);
+
+      // Enviar WhatsApp
+      enviarWhatsApp(filename);
+
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      alert("Erro ao gerar PDF.");
+    }
   }
-}
 
 
 
@@ -663,11 +663,12 @@ async function handleExportPDF() {
     }
 
     try {
-      const res = await fetch(`http://localhost:4000/assinaturas/block/${index}`, {
+      const res = await fetch(`https://gymrats-11tb.onrender.com/assinaturas/block/${index}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, func, date, signature }),
       });
+
 
       const data = await res.json();
 
@@ -693,38 +694,39 @@ async function handleExportPDF() {
     }
   };
 
-useEffect(() => {
-  async function loadDoc() {
-    try {
-      const res = await fetch(`http://localhost:4000/assinaturas/doc`);
-      const data = await res.json();
+  useEffect(() => {
+    async function loadDoc() {
+      try {
+        const res = await fetch(`https://gymrats-11tb.onrender.com/assinaturas/doc`);
 
-      if (!data.blocks) return;
+        const data = await res.json();
 
-      setBlocks(
-        data.blocks.map((b, i) => ({
-          name: b.name || "",
-          func: b.func || (i === 0 ? "Qualidade" : i === 1 ? "Manufatura" : i === 2 ? "Manutenção" : i === 3 ? "Engenharia" : ""),
-          date: b.date || "", 
-          signature: b.signature || "",
-          locked: b.locked ?? false,
-        }))
-      );
+        if (!data.blocks) return;
 
-      // Carregar outros campos, usando fallback para data atual
-      setTitle(data.title || "");
-      setDocNumber(data.docNumber || "");
-      setRevisionDesc(data.revisionDesc || "");
-      setRevisedBy(data.revisedBy || "");
-      setRevisionDate(data.revisionDate || today()); // <-- aqui
-      setDescription(data.description || "");
-    } catch (err) {
-      console.error("Erro ao carregar documento:", err);
+        setBlocks(
+          data.blocks.map((b, i) => ({
+            name: b.name || "",
+            func: b.func || (i === 0 ? "Qualidade" : i === 1 ? "Manufatura" : i === 2 ? "Manutenção" : i === 3 ? "Engenharia" : ""),
+            date: b.date || "",
+            signature: b.signature || "",
+            locked: b.locked ?? false,
+          }))
+        );
+
+        // Carregar outros campos, usando fallback para data atual
+        setTitle(data.title || "");
+        setDocNumber(data.docNumber || "");
+        setRevisionDesc(data.revisionDesc || "");
+        setRevisedBy(data.revisedBy || "");
+        setRevisionDate(data.revisionDate || today()); // <-- aqui
+        setDescription(data.description || "");
+      } catch (err) {
+        console.error("Erro ao carregar documento:", err);
+      }
     }
-  }
 
-  loadDoc();
-}, []);
+    loadDoc();
+  }, []);
 
 
   async function handleReset() {
@@ -736,9 +738,10 @@ useEffect(() => {
     if (!confirm("Tem certeza que deseja resetar todas as assinaturas?")) return;
 
     try {
-      const res = await fetch("http://localhost:4000/assinaturas/reset", {
+      const res = await fetch("https://gymrats-11tb.onrender.com/assinaturas/reset", {
         method: "POST",
       });
+
 
       const data = await res.json();
       if (!data.ok) {
@@ -775,7 +778,7 @@ useEffect(() => {
 
   async function loadUsers() {
     try {
-      const res = await fetch("http://localhost:4000/admin/users", {
+      const res = await fetch("https://gymrats-11tb.onrender.com/admin/users", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -809,7 +812,7 @@ useEffect(() => {
         payload.password = user.tempPass.trim();
       }
 
-      const res = await fetch(`http://localhost:4000/admin/users/${id}`, {
+      const res = await fetch(`https://gymrats-11tb.onrender.com/admin/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -817,6 +820,7 @@ useEffect(() => {
         },
         body: JSON.stringify(payload),
       });
+
 
       // Se a resposta não for JSON, evita crash
       let data;
@@ -847,12 +851,13 @@ useEffect(() => {
     if (!confirm("Deseja excluir este usuário?")) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/admin/users/${id}`, {
+      const res = await fetch(`https://gymrats-11tb.onrender.com/admin/users/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+
 
       const data = await res.json();
 

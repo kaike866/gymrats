@@ -6,7 +6,23 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+// CORS seguro para Netlify + local
+const allowedOrigins = [
+  "http://localhost:5173",        // desenvolvimento
+  "https://gymrats.netlify.app",  // produção no Netlify (troque pelo seu link)
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origem não permitida pelo CORS"));
+    }
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // Rotas de assinatura

@@ -4,6 +4,8 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import logoParanoa from "../assets/paranoalogosemfundo.png";
+import { Eye, EyeOff } from "lucide-react";
+
 
 const Container = styled.div`
   position: relative;
@@ -112,6 +114,7 @@ const AnimatedLogo = styled.img`
 function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const navigate = useNavigate();
   const canvasRef = useRef(null);
 
@@ -206,6 +209,8 @@ function Login() {
     <Container>
       <Canvas ref={canvasRef} />
       <Card>
+
+        {/* Logo */}
         <div
           style={{
             display: "flex",
@@ -224,6 +229,8 @@ function Login() {
         <Subtitle>Faça login para acessar o DataDriven</Subtitle>
 
         <form onSubmit={handleLogin}>
+
+          {/* Email */}
           <Input
             type="email"
             placeholder="E-mail corporativo"
@@ -231,13 +238,32 @@ function Login() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <Input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
+
+          {/* Senha com olhinho */}
+          <div style={{ position: "relative", width: "100%" }}>
+            <Input
+              type={mostrarSenha ? "text" : "password"}
+              placeholder="Senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+            />
+
+            <div
+              onClick={() => setMostrarSenha(!mostrarSenha)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "45%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#bfbfbf",
+              }}
+            >
+              {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
+            </div>
+          </div>
+
           <Button type="submit">Entrar</Button>
         </form>
 
